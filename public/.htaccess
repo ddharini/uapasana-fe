@@ -1,0 +1,13 @@
+# Hostinger serves the built app from public_html with LiteSpeed, which knows
+# nothing about client-side routes: opening /schedule or /login directly, or
+# refreshing on one, asks the server for a file that does not exist and gets a
+# 404. Any path that is not a real file or folder gets index.html instead, and
+# React Router takes it from there.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+  RewriteRule ^index\.html$ - [L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule . /index.html [L]
+</IfModule>
