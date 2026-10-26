@@ -1,0 +1,6 @@
+packages: []
+
+allowBuilds:
+  esbuild: true
+  msw: false
+  core-js: false
