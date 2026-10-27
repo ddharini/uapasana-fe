@@ -1,4 +1,5 @@
 import { Combobox } from "@base-ui/react/combobox"
+import * as React from "react"
 import { RiArrowDownSLine, RiCheckLine } from "@remixicon/react"
 import { cn } from "cn"
 
@@ -86,6 +87,9 @@ export function MandalSelect({
       .flatMap((group) => group.items)
       .find((option) => option.value === value) ?? null
 
+  const fieldRef = React.useRef<HTMLDivElement>(null)
+  const { room, lift, settle } = useLiftAboveKeyboard(fieldRef)
+
   return (
     <div className={cn("w-full min-w-0", className)}>
       <Combobox.Root<Option>
@@ -103,12 +107,16 @@ export function MandalSelect({
         // Enter picks the first match, so "sur" + Enter is Surat.
         autoHighlight
         disabled={disabled}
+        onOpenChange={(open) => {
+          if (!open) settle()
+        }}
       >
         <Combobox.InputGroup
+          ref={fieldRef}
           className={cn(
             "relative flex h-10 w-full min-w-0 items-center rounded-md border border-border bg-transparent transition-all sm:h-8",
-            "hover:bg-muted/50 focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/30",
-            "data-disabled:pointer-events-none data-disabled:opacity-50 data-popup-open:border-ring dark:bg-input/30",
+            "focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/30 hover:bg-muted/50",
+            "data-popup-open:border-ring dark:bg-input/30 data-disabled:pointer-events-none data-disabled:opacity-50",
             invalid &&
               "border-destructive ring-2 ring-destructive/20 focus-within:border-destructive"
           )}
@@ -120,7 +128,11 @@ export function MandalSelect({
             aria-invalid={invalid || undefined}
             // Selecting what's there lets the first keystroke replace a
             // picked mandal rather than type after it.
-            onFocus={(event) => event.currentTarget.select()}
+            onFocus={(event) => {
+              event.currentTarget.select()
+              lift()
+            }}
+            onBlur={settle}
             autoComplete="off"
             // text-base below sm: under 16px, iOS zooms the page on focus.
             className="h-full w-full min-w-0 truncate bg-transparent pr-8 pl-3 text-base outline-none placeholder:text-muted-foreground sm:pr-7 sm:pl-2.5 sm:text-xs/relaxed"
@@ -158,8 +170,83 @@ export function MandalSelect({
           </Combobox.Positioner>
         </Combobox.Portal>
       </Combobox.Root>
+      {room > 0 && <div aria-hidden style={{ height: room }} />}
     </div>
   )
+}
+
+/**
+ * On a phone, focusing the field opens the keyboard over the bottom half of
+ * the screen. A field low on the page ends up under it — the devotee types a
+ * mandal they cannot see, into a list that opens behind the keyboard too.
+ *
+ * So once the keyboard has opened, the field is scrolled up to just under the
+ * app header, leaving the visible space below it for the list. A field near
+ * the end of the page has no page left to scroll into, so `room` is the height
+ * of a spacer rendered after it for as long as the field is in use.
+ *
+ * The keyboard's arrival is the visual viewport shrinking; we wait for those
+ * resizes to stop, since scrolling mid-animation fights the browser's own
+ * scroll to the focused input. No resize (the keyboard was already up, moving
+ * from the previous field) falls through to the timeout.
+ */
+function useLiftAboveKeyboard(fieldRef: React.RefObject<HTMLElement | null>) {
+  const [room, setRoom] = React.useState(0)
+  const cancelRef = React.useRef<() => void>(() => {})
+
+  const lift = React.useCallback(() => {
+    if (!window.matchMedia("(pointer: coarse)").matches) return
+    cancelRef.current()
+    const viewport = window.visualViewport
+    let timer = 0
+
+    const scroll = () => {
+      cancelRef.current()
+      const field = fieldRef.current
+      if (!field || !field.contains(document.activeElement)) return
+      // Sit below the sticky app header where there is one (--app-header-h is
+      // set by AppShell; the public form has no header).
+      const header =
+        parseFloat(
+          getComputedStyle(field).getPropertyValue("--app-header-h")
+        ) || 0
+      const by =
+        field.getBoundingClientRect().top -
+        (viewport?.offsetTop ?? 0) -
+        header -
+        12
+      if (by <= 0) return
+      const left =
+        document.documentElement.scrollHeight -
+        window.innerHeight -
+        window.scrollY
+      if (by > left) setRoom(Math.ceil(by - left))
+      // After the spacer has rendered, so the page is long enough to scroll.
+      requestAnimationFrame(() =>
+        window.scrollBy({ top: by, behavior: "smooth" })
+      )
+    }
+    const wait = () => {
+      window.clearTimeout(timer)
+      timer = window.setTimeout(scroll, 150)
+    }
+
+    viewport?.addEventListener("resize", wait)
+    timer = window.setTimeout(scroll, 600)
+    cancelRef.current = () => {
+      window.clearTimeout(timer)
+      viewport?.removeEventListener("resize", wait)
+    }
+  }, [fieldRef])
+
+  const settle = React.useCallback(() => {
+    cancelRef.current()
+    setRoom(0)
+  }, [])
+
+  React.useEffect(() => () => cancelRef.current(), [])
+
+  return { room, lift, settle }
 }
 
 function Item({ option }: { option: Option }) {
