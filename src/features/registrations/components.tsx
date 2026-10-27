@@ -17,7 +17,6 @@ import * as React from "react"
 
 import { Badge } from "@/components/ui/primitives"
 import { useT } from "@/i18n/context"
-import { formatMobile } from "@/lib/phone"
 
 import { comingByText, journeyHomeText } from "./format"
 import { travelOf } from "./stay"
@@ -211,8 +210,7 @@ export function RegistrationConfirmation({
           <RiSmartphoneLine aria-hidden className="mt-0.5 size-3.5 shrink-0" />
           <span>
             {t(
-              "Use {mobile} to update this registration. Mahotsav updates will come on this number.",
-              { mobile: formatMobile(mobile) }
+              "Use your mobile no to update this registration. Mahotsav updates will come on your number."
             )}
           </span>
         </p>

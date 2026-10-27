@@ -426,8 +426,8 @@ export const GU: Record<string, string> = {
   "Room details follow once accommodation is allotted.":
     "ઉતારો ફાળવાય પછી રૂમની વિગતો મોકલવામાં આવશે.",
   "Register another person or family": "બીજી વ્યક્તિ કે પરિવારની નોંધણી કરો",
-  "Use {mobile} to update this registration. Mahotsav updates will come on this number.":
-    "આ નોંધણીમાં ફેરફાર કરવા {mobile} નો ઉપયોગ કરો. મહોત્સવની જાણકારી પણ આ જ નંબર પર મળશે.",
+  "Use your mobile no to update this registration. Mahotsav updates will come on your number.":
+    "આ નોંધણીમાં ફેરફાર કરવા તમારા મોબાઇલ નંબરનો ઉપયોગ કરો. મહોત્સવની જાણકારી પણ તમારા નંબર પર મળશે.",
 
   // ------------------------------------------------------------ /register/edit
   "Contact mobile number": "સંપર્ક મોબાઇલ નંબર",
