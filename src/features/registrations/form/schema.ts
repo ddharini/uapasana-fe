@@ -191,9 +191,10 @@ const tripFields = {
   travelTime: z.string(),
   travelStation: z.string().trim(),
   // Train, public bus or flight: "yes" or "no", required, unanswered until picked.
-  // The journey's details are asked, and sent, only after a "yes".
+  // The journey's details are asked, and sent, only after a "yes". The two are
+  // independent: someone may make their own way here and still need a drop.
   needsPickup: z.string(),
-  needsDrop: z.boolean(),
+  needsDrop: z.string(),
   // With a drop (and then required): "train", "public_bus" or "flight" — how
   // they leave, which need not be how they came — and the journey home, as
   // for the one in.
@@ -382,8 +383,10 @@ export function makeRegistrationFormSchema(lang: Lang = "en") {
         if (!isIn(MEAL_ANSWERS)(trip.needsPickup)) {
           issue([...path, "needsPickup"], t("Select Yes or No"))
         }
-        // A drop is offered only with a pickup.
-        const drop = trip.needsPickup === "yes" && trip.needsDrop
+        if (!isIn(MEAL_ANSWERS)(trip.needsDrop)) {
+          issue([...path, "needsDrop"], t("Select Yes or No"))
+        }
+        const drop = trip.needsDrop === "yes"
         if (drop && !offersPickup(trip.dropMode)) {
           issue([...path, "dropMode"], t("Select how you are leaving"))
         }
@@ -1232,7 +1235,7 @@ export const EMPTY_TRIP: TripValues = {
   travelTime: "",
   travelStation: "",
   needsPickup: "",
-  needsDrop: false,
+  needsDrop: "",
   dropMode: "",
   dropReference: "",
   dropStation: "",
@@ -1419,13 +1422,13 @@ export function toNewRegistration(
 
 /**
  * The party's travel, or one person's, as saved: by train, bus or flight the
- * details only with a pickup, and the journey home only with a drop.
+ * details only with a pickup, and the journey home only with a drop — either
+ * without the other.
  */
 function tripRecord(trip: TripValues): PersonTravel {
   const mode = trip.travelMode as TravelMode
   const pickup = offersPickup(mode) && trip.needsPickup === "yes"
-  // A drop is offered only with a pickup.
-  const drop = pickup && trip.needsDrop
+  const drop = offersPickup(mode) && trip.needsDrop === "yes"
   return {
     mode,
     reference:
@@ -1465,7 +1468,11 @@ function tripValues(travel: PersonTravel): TripValues {
         ? "yes"
         : "no"
       : "",
-    needsDrop: travel.needsDrop ?? false,
+    needsDrop: offersPickup(travel.mode)
+      ? travel.needsDrop
+        ? "yes"
+        : "no"
+      : "",
     // Before it was asked, leaving was the way they came.
     dropMode:
       travel.departureMode ??

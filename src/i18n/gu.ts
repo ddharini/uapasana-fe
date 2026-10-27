@@ -265,8 +265,8 @@ export const GU: Record<string, string> = {
   "How is {name} travelling?": "{name} કેવી રીતે આવશે?",
   "Does {name} need a pickup in Ahmedabad?":
     "શું {name} ને અમદાવાદમાં લેવા આવવાની (પિકઅપ) જરૂર છે?",
-  "{name} needs a drop when leaving":
-    "પરત જતી વખતે {name} ને ડ્રોપની જરૂર છે",
+  "Does {name} need a drop when leaving?":
+    "શું પરત જતી વખતે {name} ને ડ્રોપની જરૂર છે?",
   "How is {name} leaving?": "{name} કેવી રીતે પરત જશે?",
   "Clear {name}'s travel": "{name} ની મુસાફરીની વિગત ભૂંસો",
   "Copy {name}'s travel": "{name} ની મુસાફરીની વિગત અહીં ભરો",
@@ -343,8 +343,8 @@ export const GU: Record<string, string> = {
     "ગીતા મંદિરથી રાજકોટ જતી GSRTC વોલ્વો",
   "Arrival time": "પહોંચવાનો સમય",
   "Departure time": "ઉપડવાનો સમય",
-  "I need a drop when leaving": "પરત જતી વખતે મારે ડ્રોપની જરૂર છે",
-  "We need a drop when leaving": "પરત જતી વખતે અમારે ડ્રોપની જરૂર છે",
+  "Do you need a drop when leaving?":
+    "શું પરત જતી વખતે તમને ડ્રોપની જરૂર છે?",
   "To the station, bus stand or airport, in time for your journey home.":
     "તમારી પરત મુસાફરી માટે સમયસર સ્ટેશન, બસ સ્ટેન્ડ કે એરપોર્ટ સુધી.",
   "How are you leaving?": "તમે કેવી રીતે પરત જશો?",

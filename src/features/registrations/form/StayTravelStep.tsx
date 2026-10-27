@@ -254,10 +254,11 @@ function TripQuestions({
   const { control, register, watch } = useFormContext<RegistrationFormValues>()
   const { t } = useT()
   const travelMode = watch(`${prefix}travelMode`)
-  // Train and public bus: a required Yes or No, asked before anything else
-  // about the journey; the details follow only a Yes.
+  // Train, public bus or flight: two required Yes or No questions, the pickup
+  // and the drop, each with its journey's details after a Yes. Independent:
+  // someone may make their own way here and still need taking back.
   const wantsPickup = watch(`${prefix}needsPickup`) === "yes"
-  const wantsDrop = wantsPickup && watch(`${prefix}needsDrop`)
+  const wantsDrop = watch(`${prefix}needsDrop`) === "yes"
   const dropMode = watch(`${prefix}dropMode`)
 
   return (
@@ -320,65 +321,57 @@ function TripQuestions({
           {wantsPickup && (
             <Journey mode={travelMode} leg="arrival" prefix={prefix} />
           )}
-          {/* A drop is offered only to those who are also picked up. */}
-          {wantsPickup && (
-            <>
-              <Checkbox
-                id={`${prefix}needsDrop`}
-                label={
-                  who
-                    ? t("{name} needs a drop when leaving", { name: who })
-                    : alone
-                      ? t("I need a drop when leaving")
-                      : t("We need a drop when leaving")
-                }
-                description={t(
-                  "To the station, bus stand or airport, in time for your journey home."
-                )}
-                {...register(`${prefix}needsDrop`)}
-              />
-              {/* Leaving may not be the way they came: asked, then its details. */}
-              {wantsDrop && (
-                <Controller
-                  control={control}
-                  name={`${prefix}dropMode`}
-                  render={({ field, fieldState }) => (
-                    <Field
-                      label={
-                        who
-                          ? t("How is {name} leaving?", { name: who })
-                          : t("How are you leaving?")
-                      }
-                      required
-                      error={fieldState.error?.message}
-                    >
-                      <ChoiceGroup
-                        name={field.name}
-                        value={field.value as DropMode | ""}
-                        onChange={field.onChange}
-                        invalid={!!fieldState.error}
-                        className={
-                          who
-                            ? "grid-cols-2 sm:grid-cols-3"
-                            : "grid-cols-1 sm:grid-cols-3"
-                        }
-                        options={DROP_MODES.map((mode) => ({
-                          value: mode,
-                          label: t(TRAVEL_MODES[mode]),
-                          description: who
-                            ? undefined
-                            : t(DROP_DESCRIPTIONS[mode]),
-                          icon: <TravelModeIcon mode={mode} />,
-                        }))}
-                      />
-                    </Field>
-                  )}
-                />
+          {/* A drop is its own question: not only for those picked up. */}
+          <YesNoQuestion
+            name={`${prefix}needsDrop`}
+            required
+            question={
+              who
+                ? t("Does {name} need a drop when leaving?", { name: who })
+                : t("Do you need a drop when leaving?")
+            }
+            description={t(
+              "To the station, bus stand or airport, in time for your journey home."
+            )}
+          />
+          {/* Leaving may not be the way they came: asked, then its details. */}
+          {wantsDrop && (
+            <Controller
+              control={control}
+              name={`${prefix}dropMode`}
+              render={({ field, fieldState }) => (
+                <Field
+                  label={
+                    who
+                      ? t("How is {name} leaving?", { name: who })
+                      : t("How are you leaving?")
+                  }
+                  required
+                  error={fieldState.error?.message}
+                >
+                  <ChoiceGroup
+                    name={field.name}
+                    value={field.value as DropMode | ""}
+                    onChange={field.onChange}
+                    invalid={!!fieldState.error}
+                    className={
+                      who
+                        ? "grid-cols-2 sm:grid-cols-3"
+                        : "grid-cols-1 sm:grid-cols-3"
+                    }
+                    options={DROP_MODES.map((mode) => ({
+                      value: mode,
+                      label: t(TRAVEL_MODES[mode]),
+                      description: who ? undefined : t(DROP_DESCRIPTIONS[mode]),
+                      icon: <TravelModeIcon mode={mode} />,
+                    }))}
+                  />
+                </Field>
               )}
-              {wantsDrop && offersPickup(dropMode) && (
-                <Journey mode={dropMode} leg="departure" prefix={prefix} />
-              )}
-            </>
+            />
+          )}
+          {wantsDrop && offersPickup(dropMode) && (
+            <Journey mode={dropMode} leg="departure" prefix={prefix} />
           )}
         </div>
       )}

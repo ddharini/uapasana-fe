@@ -20,6 +20,8 @@ export function YesNoQuestion({
   name:
     | "needsPickup"
     | `members.${number}.needsPickup`
+    | "needsDrop"
+    | `members.${number}.needsDrop`
     | "arrivalMeal"
     | "departureMeal"
     | `members.${number}.arrivalMeal`

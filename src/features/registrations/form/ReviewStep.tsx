@@ -72,7 +72,7 @@ function TripSummary({ trip }: { trip: TripValues }) {
   const mode = trip.travelMode as TravelMode
   if (!mode) return <>—</>
   const pickup = offersPickup(mode) && trip.needsPickup === "yes"
-  const drop = pickup && trip.needsDrop
+  const drop = offersPickup(mode) && trip.needsDrop === "yes"
   const arriving = [
     t(TRAVEL_MODES[mode]),
     // By train or bus, the details come only with a pickup.

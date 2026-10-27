@@ -117,7 +117,19 @@ function withDefaults(
       ? values.stashedMembers.map(withNameParts)
       : DEFAULT_VALUES.stashedMembers,
     needsPickup: needsPickup ?? DEFAULT_VALUES.needsPickup,
+    needsDrop: dropAnswer(values.needsDrop, needsPickup),
   }
+}
+
+/**
+ * The drop was a tick box (true/false) shown only after a pickup, before it
+ * became its own Yes or No. Ticked is Yes; unticked under a pickup was a No;
+ * otherwise it was never asked, so it opens unanswered.
+ */
+function dropAnswer(drop: unknown, pickup: unknown): string {
+  if (typeof drop === "string") return drop
+  if (drop === true) return "yes"
+  return drop === false && pickup === "yes" ? "no" : ""
 }
 
 /**
@@ -139,6 +151,7 @@ function withNameParts(member: Partial<MemberFormValues>): MemberFormValues {
     ...parts,
     ...rest,
     youthConvention: rest.youthConvention === "yes" ? "yes" : "no",
+    needsDrop: dropAnswer(rest.needsDrop, rest.needsPickup),
   }
 }
 
