@@ -43,6 +43,7 @@ const STATUS: Record<
 const PURPOSE: Record<string, string> = {
   "whatsapp:otp": "Verification code",
   "whatsapp:admin_invite": "Team invite",
+  "whatsapp:registration_confirmation": "Registration confirmation",
   "whatsapp:stay-details": "Room details",
   "whatsapp:test": "Test",
 }
