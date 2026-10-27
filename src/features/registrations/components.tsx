@@ -10,16 +10,17 @@ import {
   RiQuestionLine,
   RiRouteLine,
   RiShuffleLine,
+  RiSmartphoneLine,
   RiTrainLine,
 } from "@remixicon/react"
 import * as React from "react"
 
 import { Badge } from "@/components/ui/primitives"
-import { EVENT } from "@/config/event"
 import { useT } from "@/i18n/context"
+import { formatMobile } from "@/lib/phone"
 
-import { comingByText, formatStay, journeyHomeText } from "./format"
-import { eventDaysCovered, travelOf } from "./stay"
+import { comingByText, journeyHomeText } from "./format"
+import { travelOf } from "./stay"
 import {
   REGISTRATION_STATUSES,
   REGISTRATION_TYPES,
@@ -115,15 +116,23 @@ export function RegistrationConfirmation({
   registration,
   actions,
   updated = false,
+  previousCode,
 }: {
   registration: Registration
   actions: React.ReactNode
   /** Changes to a saved registration, rather than a new one. */
   updated?: boolean
+  /**
+   * The code before these changes. It changes when a family becomes an
+   * individual (the one person's own number) or the other way (a new family
+   * number), and the old one is no longer found at the desk.
+   */
+  previousCode?: string
 }) {
   const primary = registration.members[0]
-  const { t, lang } = useT()
+  const { t } = useT()
   const name = primary?.fullName.split(" ")[0]
+  const mobile = primary?.mobile
   return (
     <div className="flex flex-col items-center gap-5 rounded-lg border border-border bg-card px-6 py-10 text-center">
       <RiCheckboxCircleLine className="size-10 text-primary" />
@@ -133,10 +142,15 @@ export function RegistrationConfirmation({
         </h2>
         <p className="max-w-sm text-xs/relaxed text-muted-foreground">
           {updated
-            ? t(
-                "Thank you, {name}. Your registration is updated; the code stays the same.",
-                { name }
-              )
+            ? previousCode && previousCode !== registration.code
+              ? t(
+                  "Thank you, {name}. Your registration is updated, and its code has changed from {old} to {code}. Show the new code at the registration desk.",
+                  { name, old: previousCode, code: registration.code }
+                )
+              : t(
+                  "Thank you, {name}. Your registration is updated; the code stays the same.",
+                  { name }
+                )
             : t(
                 "Thank you, {name}. Keep this code and show it at the registration desk when you arrive.",
                 { name }
@@ -178,17 +192,6 @@ export function RegistrationConfirmation({
       <dl className="grid w-full max-w-sm grid-cols-2 gap-x-4 gap-y-2 text-left text-xs/relaxed">
         <dt className="text-muted-foreground">{t("People")}</dt>
         <dd className="tabular-nums">{registration.members.length}</dd>
-        <dt className="text-muted-foreground">{t("Arriving")}</dt>
-        <dd>{formatStay(registration.arrival, lang)}</dd>
-        <dt className="text-muted-foreground">{t("Leaving")}</dt>
-        <dd>{formatStay(registration.departure, lang)}</dd>
-        <dt className="text-muted-foreground">{t("Event days")}</dt>
-        <dd className="tabular-nums">
-          {t("{n} of {total}", {
-            n: eventDaysCovered(registration),
-            total: EVENT.days.length,
-          })}
-        </dd>
         <dt className="text-muted-foreground">{t("Status")}</dt>
         <dd>
           <StatusBadge status={registration.status} />
@@ -200,6 +203,20 @@ export function RegistrationConfirmation({
         </p>
       )}
       <div className="flex flex-wrap justify-center gap-2">{actions}</div>
+      {/* The number is how they get back in to change anything, and where
+          WhatsApp updates go: worth saying once, quietly. At the desk, it is
+          what the team tells the devotee before they go. */}
+      {mobile && (
+        <p className="flex max-w-sm items-start gap-1.5 rounded-md border border-sky-600/30 bg-sky-500/10 px-3 py-1.5 text-left text-2xs/relaxed text-sky-800 dark:border-sky-400/30 dark:text-sky-300">
+          <RiSmartphoneLine aria-hidden className="mt-0.5 size-3.5 shrink-0" />
+          <span>
+            {t(
+              "Use {mobile} to update this registration. Mahotsav updates will come on this number.",
+              { mobile: formatMobile(mobile) }
+            )}
+          </span>
+        </p>
+      )}
     </div>
   )
 }

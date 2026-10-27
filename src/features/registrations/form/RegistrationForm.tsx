@@ -339,6 +339,7 @@ export function RegistrationForm({
         allowInPerson,
         lockedMandal,
         editingId: editing?.registration.id,
+        savedMembers: editing?.registration.members,
         atDesk: source === "staff",
       }}
     >

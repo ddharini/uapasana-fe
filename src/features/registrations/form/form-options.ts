@@ -18,6 +18,11 @@ export type FormOptions = {
   lockedMandal?: string
   /** The registration being edited, left out of "already registered" warnings. */
   editingId?: string
+  /**
+   * Who is on the registration being edited, as saved: anyone no longer in
+   * the form is named on the Review step before Save takes them off.
+   */
+  savedMembers?: { id: string; fullName: string }[]
   /** Whether the user is on the desk (signed in) rather than the public page. */
   atDesk: boolean
 }

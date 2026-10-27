@@ -917,7 +917,7 @@ export function StayTravelStep() {
             id="sameSchedule"
             label={t("Everyone arrives and leaves together")}
             description={t(
-              "Untick if someone in the party comes later or leaves earlier."
+              "Untick if someone in your group comes to the mahotsav later or leaves earlier."
             )}
             {...register("sameSchedule", { onChange: onSameScheduleChange })}
           />

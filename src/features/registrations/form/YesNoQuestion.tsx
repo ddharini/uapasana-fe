@@ -68,8 +68,11 @@ export function YesNoQuestion({
                 className={cn(
                   "flex cursor-pointer items-center gap-1.5 rounded-md border bg-background py-1 pr-3 pl-2 text-xs/relaxed transition-colors select-none sm:py-0.5",
                   "hover:bg-muted has-focus-visible:ring-2 has-focus-visible:ring-ring/30",
+                  // The word stays in the foreground colour: the primary green
+                  // is too dark on the dark theme's background, and read as
+                  // greyed out — as if not picked — though the tick was there.
                   checked
-                    ? "border-primary bg-primary/10 text-primary hover:bg-primary/10"
+                    ? "border-primary bg-primary/10 font-medium text-foreground hover:bg-primary/10"
                     : error
                       ? "border-destructive/60"
                       : "border-border"

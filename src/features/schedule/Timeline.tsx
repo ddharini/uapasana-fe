@@ -10,24 +10,35 @@ import * as React from "react"
 
 import { Badge, EmptyState } from "@/components/ui/primitives"
 import { toLocalDate } from "@/config/event"
+import { useT } from "@/i18n/context"
 
 import type { PublishedDay, Session } from "./api"
-import { addMinutes, formatTime, kindStyle } from "./format"
+import {
+  addMinutes,
+  dateFormat,
+  formatTime,
+  isBuiltInKind,
+  kindStyle,
+} from "./format"
 import type { SessionTarget } from "./SessionDialog"
 
 /**
  * The schedule as a timeline: shared by the admin editor and the public page
  * devotees open, so both always look the same.
+ *
+ * What a devotee reads goes through `t`, so the public page shows it in the
+ * language picked there; the admin editor has no LanguageProvider and stays
+ * English. Editor-only words (Add day, Edit …) are not translated.
  */
 
-const WEEKDAY = new Intl.DateTimeFormat("en-IN", { weekday: "short" })
-const MONTH = new Intl.DateTimeFormat("en-IN", { month: "short" })
-const LONG_DATE = new Intl.DateTimeFormat("en-IN", {
+const WEEKDAY: Intl.DateTimeFormatOptions = { weekday: "short" }
+const MONTH: Intl.DateTimeFormatOptions = { month: "short" }
+const LONG_DATE: Intl.DateTimeFormatOptions = {
   weekday: "long",
   day: "numeric",
   month: "long",
   year: "numeric",
-})
+}
 
 /**
  * The row of days along the top. With `onEdit`/`onAdd` (the admin editor)
@@ -49,12 +60,13 @@ export function DayPicker<D extends PublishedDay>({
   onEdit?: (day: D) => void
   onAdd?: () => void
 }) {
+  const { t, locale } = useT()
   const canEdit = !!onEdit
   return (
     // Phones scroll sideways when the days don't fit; wider screens share the row out.
     <div
       role="group"
-      aria-label="Event days"
+      aria-label={t("Event days")}
       className="-mx-4 flex gap-2 overflow-x-auto px-4 pt-0.5 pb-1 sm:mx-0 sm:px-0"
     >
       {days.map((day, i) => {
@@ -83,7 +95,7 @@ export function DayPicker<D extends PublishedDay>({
                     : "text-muted-foreground"
                 )}
               >
-                Day {i + 1}
+                {t("Day {n}", { n: i + 1 })}
               </span>
               <span className="font-heading text-xl leading-tight font-semibold tabular-nums">
                 {d.getDate()}
@@ -97,8 +109,8 @@ export function DayPicker<D extends PublishedDay>({
                 )}
               >
                 {day.date === today
-                  ? "Today"
-                  : `${WEEKDAY.format(d)}, ${MONTH.format(d)}`}
+                  ? t("Today")
+                  : `${dateFormat(locale, WEEKDAY).format(d)}, ${dateFormat(locale, MONTH).format(d)}`}
               </span>
             </button>
             {/* A sibling of the day button, not inside it: buttons cannot nest.
@@ -202,7 +214,10 @@ function SessionRow({
   spaced: boolean
   onEdit?: () => void
 }) {
+  const { t } = useT()
   const kind = kindStyle(session.kind)
+  // A custom type is shown as the admin typed it, like the title.
+  const kindLabel = isBuiltInKind(session.kind) ? t(kind.label) : kind.label
 
   const content = (
     <>
@@ -211,8 +226,8 @@ function SessionRow({
           {session.title}
         </span>
         <span className="flex shrink-0 items-center gap-1">
-          {live && <Badge variant="success">Now</Badge>}
-          <Badge variant={kind.badge}>{kind.label}</Badge>
+          {live && <Badge variant="success">{t("Now")}</Badge>}
+          <Badge variant={kind.badge}>{kindLabel}</Badge>
         </span>
       </span>
       <span className="flex flex-wrap gap-x-3 gap-y-0.5 text-2xs text-muted-foreground">
@@ -229,7 +244,7 @@ function SessionRow({
             className="relative z-10 inline-flex items-center gap-1 text-primary underline-offset-2 hover:underline"
           >
             <RiMapPin2Line className="size-3.5" />
-            {session.place ?? "View on map"}
+            {session.place ?? t("View on map")}
             <RiExternalLinkLine className="size-3" />
           </a>
         ) : (
@@ -369,6 +384,7 @@ export function Timeline({
     onOpen: (target: SessionTarget) => void
   }
 }) {
+  const { t } = useT()
   const { sessions } = day
   const isToday = day.date === now.date
   const canEdit = !!editor
@@ -376,8 +392,8 @@ export function Timeline({
   if (!editor && sessions.length === 0) {
     return (
       <EmptyState
-        title="Nothing planned yet"
-        description="Sessions for this day will be listed here soon."
+        title={t("Nothing planned yet")}
+        description={t("Sessions for this day will be listed here soon.")}
       />
     )
   }
@@ -452,15 +468,17 @@ export function DayHeading({
   day: PublishedDay
   number: number
 }) {
+  const { t, locale } = useT()
+  const count = day.sessions.length
   return (
     <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
       <h2 className="font-heading text-base font-medium">
-        Day {number} · {LONG_DATE.format(toLocalDate(day.date))}
+        {t("Day {n}", { n: number })} ·{" "}
+        {dateFormat(locale, LONG_DATE).format(toLocalDate(day.date))}
       </h2>
       <span className="text-2xs text-muted-foreground">
         {day.theme && <>{day.theme} · </>}
-        {day.sessions.length}{" "}
-        {day.sessions.length === 1 ? "session" : "sessions"}
+        {count === 1 ? t("1 session") : t("{n} sessions", { n: count })}
       </span>
     </div>
   )

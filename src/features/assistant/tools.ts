@@ -209,7 +209,7 @@ const filterSchema = Object.fromEntries(
 
 const devoteeReport: ToolDefinition = {
   name: "devotee_report",
-  description: `Counts and lists registered devotees with any mix of filters — the Reports screen's engine. Works on one row per person (a member of a registration); dates, meals and beds are per person, and so are travel and pickups (a party travelling separately has each person's own; otherwise everyone's is the registration's). Returns the totals, a breakdown, and the first ${MODEL_ROWS} rows of the list. The admin sees a card with the full list, Excel and PDF buttons, and a link to the same report on the Reports screen.
+  description: `Counts and lists registered devotees with any mix of filters — the Reports screen's engine. Works on one row per person (a member of a registration); dates, meals and beds are per person, and so are travel and pickups (a family or group travelling separately has each person's own; otherwise everyone's is the registration's). Returns the totals, a breakdown, and the first ${MODEL_ROWS} rows of the list. The admin sees a card with the full list, Excel and PDF buttons, and a link to the same report on the Reports screen.
 
 Use it for every "who / how many" question about devotees: arrivals and departures on a day, travel by train or bus and the pickups and drops they need, NRI airport pickups, meals on a day, beds needed on a night, ages and children, family sizes, mandals, assistance, the Youth Convention, pending registrations.
 
@@ -252,7 +252,7 @@ Examples:
         type: "string",
         enum: ["people", "registrations"],
         description:
-          'One row per person (default), or one per registration — a party, with how many of its people matched and their names. Use "registrations" for pickups, drops, parking and calling contacts.',
+          'One row per person (default), or one per registration — a family or group, with how many of its people matched and their names. Use "registrations" for pickups, drops, parking and calling contacts.',
       },
       columns: {
         type: "array",

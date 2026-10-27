@@ -85,9 +85,16 @@ export function usePublishedSchedule() {
   return useQuery({
     queryKey: ["schedule", "published"],
     queryFn: () =>
-      api.get<{ days: PublishedDay[]; publishedAt: string | null }>(
-        "/schedule/published"
-      ),
+      api.get<{
+        days: PublishedDay[]
+        /**
+         * Gujarati for each theme, title, place and note in `days`, keyed by
+         * the English. Made by the server on publish; a text missing from it
+         * shows in English.
+         */
+        gu?: Record<string, string>
+        publishedAt: string | null
+      }>("/schedule/published"),
     refetchInterval: 2 * 60_000,
     refetchOnWindowFocus: true,
   })

@@ -72,7 +72,12 @@ function EditMyRegistrationPage() {
   const prefill = !fromForm ? state?.mobile : undefined
   const [auth, setAuth] = React.useState<Auth | undefined>(fromForm)
   const [expired, setExpired] = React.useState(false)
-  const [saved, setSaved] = React.useState<Registration>()
+  // With the code it had before, kept at the moment of saving: the list of
+  // their registrations may refetch with the new code before this shows.
+  const [saved, setSaved] = React.useState<{
+    registration: Registration
+    previousCode: string
+  }>()
   const [, setParams] = useSearchParams()
 
   // One registration per contact number, so this is it.
@@ -88,7 +93,8 @@ function EditMyRegistrationPage() {
   if (saved) {
     body = (
       <RegistrationConfirmation
-        registration={saved}
+        registration={saved.registration}
+        previousCode={saved.previousCode}
         updated
         actions={
           <Link
@@ -186,7 +192,9 @@ function EditMyRegistrationPage() {
           key={chosen.id}
           source="self"
           editing={{ registration: chosen, as: "self", ownerToken: auth.token }}
-          onRegistered={setSaved}
+          onRegistered={(registration) =>
+            setSaved({ registration, previousCode: chosen.code })
+          }
           onOwnerTokenExpired={() => {
             // The changes stay in this device's draft until they verify again.
             setExpired(true)

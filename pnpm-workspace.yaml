@@ -4,3 +4,19 @@ allowBuilds:
   esbuild: true
   msw: false
   core-js: false
+
+# Patched versions of packages that only arrive indirectly (through jspdf, the
+# shadcn CLI, eslint and the build tools), where the parent's own range still
+# allows the vulnerable release.
+overrides:
+  dompurify: ^3.4.17
+  proxy-addr: ^2.0.8
+  body-parser: ^2.4.0
+  undici: ^7.30.1
+  '@modelcontextprotocol/sdk': ^1.32.2
+  hono: ^4.13.14
+  ip-address: ^10.7.5
+  fast-uri: ^3.1.9
+  brace-expansion: ^5.0.12
+  source-map-js: ^1.2.2
+  zod: ^4.6.7

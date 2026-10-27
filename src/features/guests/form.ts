@@ -103,7 +103,7 @@ export function validate(v: GuestFormValues): GuestFormErrors {
     else if (guests < 1) errors[`${day.date}.guests`] = "At least 1"
     else if (guests > MAX_GUESTS_PER_DAY)
       errors[`${day.date}.guests`] =
-        `At most ${MAX_GUESTS_PER_DAY} — call the team for a bigger party`
+        `At most ${MAX_GUESTS_PER_DAY} — call the team for a bigger group`
     if (day.meals.length === 0 && !day.noMeal)
       errors[`${day.date}.meal`] = "Tick lunch, dinner, or no mahaprasad"
   }

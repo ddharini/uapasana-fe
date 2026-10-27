@@ -59,6 +59,21 @@ export function normalizeKind(text: string) {
 export const GOOGLE_MAPS_URL =
   /^https?:\/\/(maps\.app\.goo\.gl\/|goo\.gl\/maps\/|(www\.)?google\.[a-z.]{2,6}\/maps|maps\.google\.[a-z.]{2,6}(\/|\?|$))\S*$/i
 
+// One formatter per locale and set of options, made on first use: the public
+// page asks for them in the language the devotee picked.
+const dateFormats = new Map<string, Intl.DateTimeFormat>()
+
+/** An Intl date format for "en-IN" or "gu-IN", reused across renders. */
+export function dateFormat(locale: string, options: Intl.DateTimeFormatOptions) {
+  const key = `${locale}:${JSON.stringify(options)}`
+  let format = dateFormats.get(key)
+  if (!format) {
+    format = new Intl.DateTimeFormat(locale, options)
+    dateFormats.set(key, format)
+  }
+  return format
+}
+
 const SHORT_DATE = new Intl.DateTimeFormat("en-IN", {
   weekday: "short",
   day: "numeric",

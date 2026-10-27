@@ -4,27 +4,48 @@ import { PublicHeader } from "@/components/layout/PublicHeader"
 import { LoadError } from "@/components/LoadError"
 import { EmptyState, Skeleton } from "@/components/ui/primitives"
 import { usePublishedSchedule } from "@/features/schedule/api"
+import { dateFormat } from "@/features/schedule/format"
 import { nowParts, useNow } from "@/features/schedule/now"
 import { DayHeading, DayPicker, Timeline } from "@/features/schedule/Timeline"
-
-const UPDATED_AT = new Intl.DateTimeFormat("en-IN", {
-  day: "numeric",
-  month: "short",
-  hour: "numeric",
-  minute: "2-digit",
-})
+import { useT } from "@/i18n/context"
+import { LanguagePicker, LanguageProvider } from "@/i18n/LanguageProvider"
 
 /**
  * The programme for devotees, at /schedule — the link admins share on
  * WhatsApp. No sign-in. Shows only what an admin last published, and picks
  * up a new publish on its own while the page is open.
+ *
+ * In English or Gujarati, like /register, and the same choice: one picked on
+ * either page holds on the other. The page's own words and dates come from
+ * gu.ts; the admins' titles, places, notes and themes from the Gujarati the
+ * server made when they published, falling back to English for any it lacks.
  */
 export function PublicSchedule() {
+  return (
+    <LanguageProvider>
+      <PublicSchedulePage />
+    </LanguageProvider>
+  )
+}
+
+function PublicSchedulePage() {
+  const { t, locale, lang } = useT()
   const now = nowParts(useNow())
   const { data, isPending, isError, error, refetch } = usePublishedSchedule()
   const [searchParams, setSearchParams] = useSearchParams()
 
-  const days = data?.days ?? []
+  const gu = (lang === "gu" && data?.gu) || {}
+  const inLang = (text: string | null) => (text && gu[text]) || text
+  const days = (data?.days ?? []).map((day) => ({
+    ...day,
+    theme: inLang(day.theme),
+    sessions: day.sessions.map((s) => ({
+      ...s,
+      title: inLang(s.title) ?? s.title,
+      place: inLang(s.place),
+      note: inLang(s.note),
+    })),
+  }))
   // ?day= keeps the chosen day on refresh, and lets a link point at one day.
   const requested = searchParams.get("day")
   const selectedDay =
@@ -35,18 +56,19 @@ export function PublicSchedule() {
 
   return (
     <div className="flex min-h-svh flex-col">
-      <PublicHeader eyebrow="Schedule">
+      <PublicHeader eyebrow={t("Schedule")} action={<LanguagePicker />}>
         <p className="max-w-prose text-xs/relaxed text-muted-foreground">
-          Every session, day by day: when it starts, and where. Tap a place with
-          a map link to open it in Google Maps.
+          {t(
+            "Every session, day by day: when it starts, and where. Tap a place with a map link to open it in Google Maps."
+          )}
         </p>
         <p className="text-xs/relaxed text-muted-foreground">
-          Not registered yet?{" "}
+          {t("Not registered yet?")}{" "}
           <Link
             to="/register"
             className="font-medium text-primary hover:underline"
           >
-            Register here
+            {t("Register here")}
           </Link>
         </p>
       </PublicHeader>
@@ -61,8 +83,10 @@ export function PublicSchedule() {
           </>
         ) : !selectedDay ? (
           <EmptyState
-            title="The schedule is on its way"
-            description="The schedule will appear here as soon as the organisers share it. Keep this link — it will update by itself."
+            title={t("The schedule is on its way")}
+            description={t(
+              "The schedule will appear here as soon as the organisers share it. Keep this link — it will update by itself."
+            )}
           />
         ) : (
           <>
@@ -78,7 +102,7 @@ export function PublicSchedule() {
               }
             />
             <section
-              aria-label={`Day ${dayNumber}`}
+              aria-label={t("Day {n}", { n: dayNumber })}
               className="flex flex-col gap-4"
             >
               <DayHeading day={selectedDay} number={dayNumber} />
@@ -86,7 +110,14 @@ export function PublicSchedule() {
             </section>
             {data?.publishedAt && (
               <p className="text-center text-2xs text-muted-foreground">
-                Last updated {UPDATED_AT.format(new Date(data.publishedAt))}
+                {t("Last updated {time}", {
+                  time: dateFormat(locale, {
+                    day: "numeric",
+                    month: "short",
+                    hour: "numeric",
+                    minute: "2-digit",
+                  }).format(new Date(data.publishedAt)),
+                })}
               </p>
             )}
           </>

@@ -257,7 +257,7 @@ export const GU: Record<string, string> = {
     "જે આવે છે તે દરેક વ્યક્તિને ટીક કરો. તેઓ આગમન અને પ્રસ્થાન માટે જાન્યુઆરી કે ફેબ્રુઆરી 2027નો કોઈ પણ દિવસ પસંદ કરી શકશે.",
   "{names}: arriving early as Swayam Sevaks": "{names}: સ્વયંસેવક તરીકે વહેલા આવશે",
   "Everyone arrives and leaves together": "બધા સાથે જ આવશે અને સાથે જ જશે",
-  "Untick if someone in the party comes later or leaves earlier.":
+  "Untick if someone in your group comes to the mahotsav later or leaves earlier.":
     "જો કોઈ મોડું આવે કે વહેલું જાય તો ટીક કાઢી નાખો.",
   "Everyone travels together": "બધા સાથે એક જ રીતે મુસાફરી કરશે",
   "Untick if some of you come a different way — for example, some by train and some by flight.":
@@ -409,6 +409,12 @@ export const GU: Record<string, string> = {
     "આભાર, {name}. આ કોડ સાચવી રાખો અને આવો ત્યારે નોંધણી કાઉન્ટર પર બતાવજો.",
   "Thank you, {name}. Your registration is updated; the code stays the same.":
     "આભાર, {name}. તમારી નોંધણીમાં ફેરફાર થઈ ગયો છે; કોડ એ જ રહેશે.",
+  "Thank you, {name}. Your registration is updated, and its code has changed from {old} to {code}. Show the new code at the registration desk.":
+    "આભાર, {name}. તમારી નોંધણીમાં ફેરફાર થઈ ગયો છે, અને તેનો કોડ {old} થી બદલાઈને {code} થયો છે. નોંધણી કાઉન્ટર પર નવો કોડ બતાવજો.",
+  "Saving removes {names} from this registration.":
+    "સાચવવાથી {names} આ નોંધણીમાંથી નીકળી જશે.",
+  "To keep them, switch back to Family.":
+    "તેમને રાખવા હોય તો ફરી પરિવાર પસંદ કરો.",
   "Registration code": "નોંધણી કોડ",
   "Family code": "પરિવાર કોડ",
   "Each person's code": "દરેક વ્યક્તિનો કોડ",
@@ -420,6 +426,8 @@ export const GU: Record<string, string> = {
   "Room details follow once accommodation is allotted.":
     "ઉતારો ફાળવાય પછી રૂમની વિગતો મોકલવામાં આવશે.",
   "Register another person or family": "બીજી વ્યક્તિ કે પરિવારની નોંધણી કરો",
+  "Use {mobile} to update this registration. Mahotsav updates will come on this number.":
+    "આ નોંધણીમાં ફેરફાર કરવા {mobile} નો ઉપયોગ કરો. મહોત્સવની જાણકારી પણ આ જ નંબર પર મળશે.",
 
   // ------------------------------------------------------------ /register/edit
   "Contact mobile number": "સંપર્ક મોબાઇલ નંબર",
@@ -562,4 +570,28 @@ export const GU: Record<string, string> = {
   "Verify your number again to see your registrations.":
     "તમારી નોંધણી જોવા ફરીથી નંબરની ખાતરી કરો.",
   "Write the name in English letters": "નામ અંગ્રેજી અક્ષરોમાં લખો",
+
+  // ---------------------------------------------------------- the schedule
+  // Session titles, places, notes and custom types show as the admin typed
+  // them; only the page's own words are here.
+  "Every session, day by day: when it starts, and where. Tap a place with a map link to open it in Google Maps.":
+    "દરેક દિવસનો કાર્યક્રમ: કયું સત્ર ક્યારે શરૂ થાય છે અને ક્યાં. નકશાની લિંકવાળી જગ્યા પર ટૅપ કરવાથી તે Google Mapsમાં ખૂલશે.",
+  "Not registered yet?": "હજી નોંધણી નથી કરી?",
+  "Register here": "અહીં નોંધણી કરો",
+  "The schedule is on its way": "કાર્યક્રમ ટૂંક સમયમાં આવશે",
+  "The schedule will appear here as soon as the organisers share it. Keep this link — it will update by itself.":
+    "આયોજકો કાર્યક્રમ જાહેર કરશે કે તરત અહીં દેખાશે. આ લિંક સાચવી રાખો — તે આપમેળે અપડેટ થશે.",
+  "Last updated {time}": "છેલ્લે અપડેટ: {time}",
+  Today: "આજે",
+  Now: "ચાલુ છે",
+  "View on map": "નકશામાં જુઓ",
+  "Nothing planned yet": "હજી કંઈ નક્કી નથી",
+  "Sessions for this day will be listed here soon.":
+    "આ દિવસનાં સત્રો ટૂંક સમયમાં અહીં દેખાશે.",
+  "1 session": "1 સત્ર",
+  "{n} sessions": "{n} સત્રો",
+  Sabha: "સભા",
+  Aarti: "આરતી",
+  Prasad: "પ્રસાદ",
+  Cultural: "સાંસ્કૃતિક",
 }

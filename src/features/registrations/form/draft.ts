@@ -123,6 +123,8 @@ function withDefaults(
 /**
  * A stored person with the form's current fields. The name was one "full
  * name" box before it was asked in three parts: a draft from then is split.
+ * The Youth Convention was left unanswered ("") before it defaulted to No: a
+ * draft from then opens on No, as a new person does, rather than on neither.
  */
 function withNameParts(member: Partial<MemberFormValues>): MemberFormValues {
   const { fullName, ...rest } = member as Partial<MemberFormValues> & {
@@ -132,7 +134,12 @@ function withNameParts(member: Partial<MemberFormValues>): MemberFormValues {
     typeof fullName === "string" && rest.firstName === undefined
       ? splitFullName(fullName)
       : {}
-  return { ...emptyMember(), ...parts, ...rest }
+  return {
+    ...emptyMember(),
+    ...parts,
+    ...rest,
+    youthConvention: rest.youthConvention === "yes" ? "yes" : "no",
+  }
 }
 
 function clampStep(step: unknown) {

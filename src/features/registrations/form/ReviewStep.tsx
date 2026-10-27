@@ -17,6 +17,7 @@ import {
   type TravelMode,
 } from "../types"
 import { formatIndiaFlight, formatStay } from "../format"
+import { useFormOptions } from "./form-options"
 import {
   fullNameOf,
   comesByVehicle,
@@ -133,7 +134,13 @@ export function ReviewStep({
     formState: { errors },
   } = useFormContext<RegistrationFormValues>()
   const { t, lang } = useT()
+  const { savedMembers = [] } = useFormOptions()
   const values = getValues()
+  // People on the saved registration who are not in the form now: removed by
+  // hand, or set aside by switching a family to Individual. Saving takes them
+  // off, and the set-aside list is never sent, so say so before Save.
+  const kept = new Set(values.members.map((member) => member.key))
+  const removed = savedMembers.filter((member) => !kept.has(member.id))
   const beds = bedsWanted(values)
   // From abroad: the party's airport flights, or each person's.
   const splitFlights = hasSplitFlights(values)
@@ -256,6 +263,18 @@ export function ReviewStep({
             </li>
           ))}
         </ul>
+        {removed.length > 0 && (
+          <p
+            role="note"
+            className="rounded-md bg-amber-500/15 px-3 py-2 text-2xs/relaxed text-amber-800 dark:text-amber-300"
+          >
+            {t("Saving removes {names} from this registration.", {
+              names: removed.map((member) => member.fullName).join(", "),
+            })}
+            {values.type === "individual" &&
+              ` ${t("To keep them, switch back to Family.")}`}
+          </p>
+        )}
         {(india?.arrival || india?.departure) && (
           <dl className="divide-y divide-border">
             {india.arrival && (

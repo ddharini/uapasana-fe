@@ -1252,7 +1252,9 @@ export function emptyMember(): MemberFormValues {
     relation: "",
     needsAssistance: false,
     assistanceNote: "",
-    youthConvention: "",
+    // No unless they say Yes: most who come for the Mahotsav do not stay on
+    // for the Convention, and an unanswered question saved nothing at all.
+    youthConvention: "no",
     arrivalDate: "",
     arrivalSlot: "",
     departureDate: "",
@@ -1511,12 +1513,9 @@ export function fromRegistration(
       relation: member.relation ?? "",
       needsAssistance: member.needsAssistance,
       assistanceNote: member.assistanceNote ?? "",
-      youthConvention:
-        member.attendsYouthConvention == null
-          ? ""
-          : member.attendsYouthConvention
-            ? "yes"
-            : "no",
+      // Never answered (saved before it was asked, or over 40 then) opens on
+      // No, as a new person does.
+      youthConvention: member.attendsYouthConvention ? "yes" : "no",
       arrivalDate: split ? member.arrival.date : "",
       arrivalSlot: split ? member.arrival.slot : "",
       departureDate: split ? member.departure.date : "",
