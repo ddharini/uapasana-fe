@@ -1229,6 +1229,52 @@ export const STEP_FIELDS = [
   ["consent"],
 ] as const satisfies readonly (readonly (keyof RegistrationFormValues)[])[]
 
+/** A person's own days and travel, asked on step 3. The rest of a person — name, age, number, flights — is step 2's. */
+const MEMBER_STAY_FIELDS: readonly string[] = [
+  "arrivalDate",
+  "arrivalSlot",
+  "departureDate",
+  "departureSlot",
+  "arrivalMeal",
+  "departureMeal",
+  "needsAccommodation",
+  "earlySeva",
+  ...TRIP_FIELDS,
+]
+const MEMBER_FIELDS = Object.keys(makeMemberSchema(translator("en")).shape)
+
+/**
+ * The paths Continue checks on `step`: STEP_FIELDS with "members" spelled out
+ * as each person's fields that are asked on that step, plus the list's own
+ * error ("Add at least two people") on step 2.
+ *
+ * Checking "members" whole also checked every person's step-3 fields, which
+ * are not on screen at step 2: going back from step 3 with someone's days or
+ * travel unfinished left step 2's Continue refusing, with no error showing.
+ * The same held the other way for a step 3 reached from the step bar.
+ */
+export function stepFieldPaths(
+  step: number,
+  values: Pick<RegistrationFormValues, "members">
+): string[] {
+  const own = MEMBER_FIELDS.filter((field) =>
+    step === 2
+      ? MEMBER_STAY_FIELDS.includes(field)
+      : !MEMBER_STAY_FIELDS.includes(field)
+  )
+  return STEP_FIELDS[step].flatMap((field) =>
+    field !== "members"
+      ? [field]
+      : [
+          // The list error sits on `root` once any person's path is named.
+          ...(step === 1 ? ["members.root"] : []),
+          ...values.members.flatMap((_, index) =>
+            own.map((name) => `members.${index}.${name}`)
+          ),
+        ]
+  )
+}
+
 export const EMPTY_TRIP: TripValues = {
   travelMode: "",
   travelReference: "",

@@ -9,7 +9,14 @@ import {
 } from "@remixicon/react"
 import { cn } from "cn"
 import * as React from "react"
-import { FormProvider, useForm, useWatch } from "react-hook-form"
+import {
+  FormProvider,
+  get,
+  type FieldErrors,
+  useForm,
+  useWatch,
+  type Path,
+} from "react-hook-form"
 import { useSearchParams } from "react-router"
 
 import { Button } from "@/components/ui/button"
@@ -32,17 +39,17 @@ import {
 import type { Registration } from "../types"
 import { clearDraft, hasContent, loadDraft, saveDraft } from "./draft"
 import { FormOptionsContext, type FormOptions } from "./form-options"
-import { keepErrorsFresh } from "./fresh-errors"
+import { errorPaths, keepErrorsFresh } from "./fresh-errors"
 import { MembersStep } from "./MembersStep"
 import { PartyStep } from "./PartyStep"
 import { ReviewStep } from "./ReviewStep"
 import {
   DEFAULT_VALUES,
-  STEP_FIELDS,
   contactMobile,
   fromRegistration,
   makeRegistrationFormSchema,
   relatedFields,
+  stepFieldPaths,
   toNewRegistration,
   type RegistrationFormValues,
 } from "./schema"
@@ -62,15 +69,20 @@ const STEPS = [
  * Four short steps rather than one long page: most people fill this on a phone,
  * and a family of six is a lot of fields to scroll past to find the one error.
  */
-/** Moves to and focuses the first field showing an error, in screen order — including choice cards and the phone field, which a plain focus() call misses. */
+/**
+ * Moves to and focuses the first field showing an error, in screen order —
+ * including choice cards and the phone field, which a plain focus() call
+ * misses. False when no field on screen shows one.
+ */
 function focusFirstError(root: HTMLElement | null) {
   const invalid = root?.querySelector<HTMLElement>('[aria-invalid="true"]')
-  if (!invalid) return
+  if (!invalid) return false
   const focusable = invalid.matches("input, select, textarea, button")
     ? invalid
     : invalid.querySelector<HTMLElement>("input, select, textarea, button")
   invalid.scrollIntoView({ behavior: "smooth", block: "center" })
   focusable?.focus({ preventScroll: true })
+  return true
 }
 
 /**
@@ -155,6 +167,11 @@ export function RegistrationForm({
   const topRef = React.useRef<HTMLDivElement>(null)
   const formRef = React.useRef<HTMLFormElement>(null)
 
+  // Problems a check found that no field on screen shows. A rule and the
+  // screen agreeing is what keeps this empty; when they ever disagree, the
+  // person reads what is wrong instead of pressing a button that does nothing.
+  const [unshown, setUnshown] = React.useState<string[]>([])
+
   const createRegistration = useCreateRegistration()
   const updateAtDesk = useUpdateRegistration(editing?.registration.id ?? "")
   const updateOwn = useUpdateOwnRegistration(editing?.registration.id ?? "")
@@ -180,6 +197,10 @@ export function RegistrationForm({
     reValidateMode: "onChange",
   })
 
+  /** What Continue checks on `step`: only what that step shows. */
+  const checkedPaths = (index: number) =>
+    stepFieldPaths(index, form.getValues()) as Path<RegistrationFormValues>[]
+
   // Re-checks fields showing an error, so none outlives its cause. On a step
   // where Continue has been pressed, also the fields whose rules read the one
   // that changed, so a new conflict shows at once; before that, nothing turns
@@ -196,7 +217,10 @@ export function RegistrationForm({
   React.useEffect(() => {
     if (lastLang.current === lang) return
     lastLang.current = lang
-    if (attempted.includes(step)) void form.trigger([...STEP_FIELDS[step]])
+    if (attempted.includes(step))
+      void form.trigger(
+        stepFieldPaths(step, form.getValues()) as Path<RegistrationFormValues>[]
+      )
   }, [lang, attempted, step, form])
 
   /**
@@ -240,6 +264,7 @@ export function RegistrationForm({
 
   const goTo = (next: number) => {
     setShowRestored(false)
+    setUnshown([])
     setReached((current) => Math.max(current, next))
     setParams((current) => {
       const updated = new URLSearchParams(current)
@@ -249,15 +274,43 @@ export function RegistrationForm({
     topRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
   }
 
-  /** After a check fails: wait for the errors to render, then go to the first. */
-  const showFirstError = () =>
-    setTimeout(() => focusFirstError(formRef.current), 50)
+  /** Every field path showing an error that step `index` owns (all of them without one). */
+  const errorsOn = (
+    index?: number,
+    errors: FieldErrors<RegistrationFormValues> = form.formState.errors
+  ) => {
+    const all = errorPaths(errors)
+    if (index === undefined) return all
+    const owned = stepFieldPaths(index, form.getValues())
+    return all.filter((path) =>
+      owned.some(
+        (own) =>
+          path === own ||
+          path.startsWith(`${own}.`) ||
+          (own === "members.root" && path === "members")
+      )
+    )
+  }
+
+  /**
+   * After a check fails: wait for the errors to render, then go to the first.
+   * If none is on screen, list what was found under the form instead.
+   */
+  const showFirstError = (index?: number) =>
+    setTimeout(() => {
+      if (focusFirstError(formRef.current)) return
+      const messages = errorsOn(index).map((path) => {
+        const error = get(form.formState.errors, path)
+        return (error?.message ?? error?.root?.message) as string | undefined
+      })
+      setUnshown([...new Set(messages.filter((m): m is string => !!m))])
+    }, 50)
 
   const next = async () => {
     markAttempted(step)
-    const valid = await form.trigger([...STEP_FIELDS[step]])
+    const valid = await form.trigger(checkedPaths(step))
     if (valid) goTo(step + 1)
-    else showFirstError()
+    else showFirstError(step)
   }
 
   // Built when the form is submitted rather than during render: the handler
@@ -319,7 +372,24 @@ export function RegistrationForm({
         }
         // Anything else is shown below the form from `saving.error`.
       }
-    }, showFirstError)()
+    }, onInvalid)()
+  }
+
+  /**
+   * Submit found a problem. The step bar lets someone jump ahead after
+   * changing an earlier step, so it may not be on Review: go back to the first
+   * step that has one, where its field is on screen.
+   */
+  const onInvalid = (errors: FieldErrors<RegistrationFormValues>) => {
+    // From handleSubmit: formState has not re-rendered with them yet.
+    const first = STEPS.findIndex(
+      (_, index) => errorsOn(index, errors).length > 0
+    )
+    if (first !== -1 && first !== step) {
+      markAttempted(first)
+      goTo(first)
+    }
+    showFirstError(first === -1 ? undefined : first)
   }
 
   const isLast = step === STEPS.length - 1
@@ -494,6 +564,22 @@ export function RegistrationForm({
             {step === 1 && <MembersStep />}
             {step === 2 && <StayTravelStep />}
             {step === 3 && <ReviewStep onEditStep={goTo} />}
+
+            {unshown.length > 0 && (
+              <div
+                role="alert"
+                className="rounded-md bg-destructive/10 px-3 py-2 text-2xs/relaxed text-destructive"
+              >
+                <p className="font-medium">
+                  {t("Please fix these before continuing:")}
+                </p>
+                <ul className="list-disc pl-4">
+                  {unshown.map((message) => (
+                    <li key={message}>{message}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             {saving.isError && (
               <p className="text-2xs/relaxed text-destructive">

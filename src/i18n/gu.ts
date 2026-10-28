@@ -54,6 +54,7 @@ export const GU: Record<string, string> = {
     "નોંધણી સાચવી શકાઈ નહીં: {reason}",
   "The registration could not be saved. Check your connection and submit again.":
     "નોંધણી સાચવી શકાઈ નહીં. ઇન્ટરનેટ તપાસીને ફરી મોકલો.",
+  "Please fix these before continuing:": "આગળ વધતા પહેલાં આટલું સુધારો:",
   Back: "પાછળ",
   Continue: "આગળ વધો",
   "Save changes": "ફેરફારો સાચવો",
@@ -255,7 +256,8 @@ export const GU: Record<string, string> = {
     "કોઈ સ્વયંસેવક તરીકે સેવા માટે વહેલા આવે છે? (વૈકલ્પિક)",
   "Tick each person who is. They can pick any day in January or February 2027 for arriving and leaving.":
     "જે આવે છે તે દરેક વ્યક્તિને ટીક કરો. તેઓ આગમન અને પ્રસ્થાન માટે જાન્યુઆરી કે ફેબ્રુઆરી 2027નો કોઈ પણ દિવસ પસંદ કરી શકશે.",
-  "{names}: arriving early as Swayam Sevaks": "{names}: સ્વયંસેવક તરીકે વહેલા આવશે",
+  "{names}: arriving early as Swayam Sevaks":
+    "{names}: સ્વયંસેવક તરીકે વહેલા આવશે",
   "Everyone arrives and leaves together": "બધા સાથે જ આવશે અને સાથે જ જશે",
   "Untick if someone in your group comes to the mahotsav later or leaves earlier.":
     "જો કોઈ મોડું આવે કે વહેલું જાય તો ટીક કાઢી નાખો.",
@@ -290,6 +292,8 @@ export const GU: Record<string, string> = {
   "no {meal}": "{meal}: ના",
   "{nights} nights · attending {days} of {total} event days":
     "{nights} રાત · મહોત્સવના {total} માંથી {days} દિવસ હાજરી",
+  "Attending {days} of {total} event days":
+    "મહોત્સવના {total} માંથી {days} દિવસ હાજરી",
   "Same as above": "ઉપર મુજબ",
   "Copy {name}'s arriving and leaving": "{name} નું આગમન અને પ્રસ્થાન અહીં ભરો",
   "Clear {name}'s arriving and leaving": "{name} નું આગમન અને પ્રસ્થાન ભૂંસો",
@@ -343,8 +347,7 @@ export const GU: Record<string, string> = {
     "ગીતા મંદિરથી રાજકોટ જતી GSRTC વોલ્વો",
   "Arrival time": "પહોંચવાનો સમય",
   "Departure time": "ઉપડવાનો સમય",
-  "Do you need a drop when leaving?":
-    "શું પરત જતી વખતે તમને ડ્રોપની જરૂર છે?",
+  "Do you need a drop when leaving?": "શું પરત જતી વખતે તમને ડ્રોપની જરૂર છે?",
   "To the station, bus stand or airport, in time for your journey home.":
     "તમારી પરત મુસાફરી માટે સમયસર સ્ટેશન, બસ સ્ટેન્ડ કે એરપોર્ટ સુધી.",
   "How are you leaving?": "તમે કેવી રીતે પરત જશો?",

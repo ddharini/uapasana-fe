@@ -264,12 +264,17 @@ export function MembersStep() {
                   hint={t(
                     "To change the contact number, ask your mandal sanchalak or the desk."
                   )}
+                  // Read-only, but its rules still apply: a saved number the
+                  // form no longer accepts has to say so, or Continue refuses
+                  // with nothing on screen.
+                  error={memberErrors?.mobile?.message}
                   className="col-span-2"
                 >
                   <Input
                     id={`members.${index}.mobile`}
                     readOnly
                     aria-readonly
+                    aria-invalid={!!memberErrors?.mobile}
                     className="bg-muted/50 tabular-nums"
                     value={
                       members[0]?.mobile

@@ -40,12 +40,27 @@ export function eventDaysCovered(registration: Registration) {
   ).length
 }
 
-/** True when at least one member's dates differ from the booking's. */
+/**
+ * Two answers to "will you take the meal?" that disagree. Missing on either
+ * side (saved before it was asked, or no meal in that slot) is not a
+ * disagreement.
+ */
+const mealsDiffer = (a: StayPoint, b: StayPoint) =>
+  a.meal != null && b.meal != null && a.meal !== b.meal
+
+/**
+ * True when at least one member's dates differ from the booking's — or their
+ * meal answers do. Same days, different meals is still a split schedule:
+ * treated as shared, the edit form opened on the party's answer alone and
+ * saving put it on everyone.
+ */
 export function hasSplitSchedule(registration: Registration) {
   return registration.members.some(
     (member) =>
       compareStay(member.arrival, registration.arrival) !== 0 ||
-      compareStay(member.departure, registration.departure) !== 0
+      compareStay(member.departure, registration.departure) !== 0 ||
+      mealsDiffer(member.arrival, registration.arrival) ||
+      mealsDiffer(member.departure, registration.departure)
   )
 }
 

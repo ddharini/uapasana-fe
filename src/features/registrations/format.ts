@@ -37,8 +37,11 @@ export function formatIndiaFlight(flight: IndiaFlight, lang: Lang = "en") {
     day: "numeric",
     month: "short",
   })
+  // The form's Review step can show a flight whose day is not picked yet
+  // (reached from the step bar after changing step 2): formatting an empty
+  // day throws, and that took the whole form down.
   const when = [
-    flightDate.format(toLocalDate(flight.date)).replace(",", ""),
+    flight.date && flightDate.format(toLocalDate(flight.date)).replace(",", ""),
     flight.time && formatTime(flight.time),
   ]
     .filter(Boolean)

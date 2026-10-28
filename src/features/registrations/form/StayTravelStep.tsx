@@ -580,10 +580,18 @@ export function StayTravelStep() {
     "departureSlot",
   ])
 
-  const arrivalError =
-    errors.arrivalDate?.message ?? errors.arrivalSlot?.message
-  const departureError =
-    errors.departureDate?.message ?? errors.departureSlot?.message
+  // The day and the time share one picker, so both their errors show on it:
+  // one at a time hid "Select a time" until the day was fixed.
+  const bothErrors = (...messages: (string | undefined)[]) =>
+    messages.filter(Boolean).join(" · ") || undefined
+  const arrivalError = bothErrors(
+    errors.arrivalDate?.message,
+    errors.arrivalSlot?.message
+  )
+  const departureError = bothErrors(
+    errors.departureDate?.message,
+    errors.departureSlot?.message
+  )
 
   const datesComplete =
     arrivalDate && arrivalSlot && departureDate && departureSlot
@@ -933,11 +941,21 @@ export function StayTravelStep() {
 
             {validRange && (
               <p className="text-xs/relaxed text-muted-foreground tabular-nums">
-                {t("{nights} nights · attending {days} of {total} event days", {
-                  nights: nightsBetween(arrival, departure),
-                  days: eventDays,
-                  total: EVENT.days.length,
-                })}
+                {/* A local mandal sleeps at home: counting nights read to
+                    them as a stay being arranged. */}
+                {local
+                  ? t("Attending {days} of {total} event days", {
+                      days: eventDays,
+                      total: EVENT.days.length,
+                    })
+                  : t(
+                      "{nights} nights · attending {days} of {total} event days",
+                      {
+                        nights: nightsBetween(arrival, departure),
+                        days: eventDays,
+                        total: EVENT.days.length,
+                      }
+                    )}
               </p>
             )}
           </>
