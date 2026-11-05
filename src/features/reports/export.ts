@@ -30,7 +30,7 @@ const stamp = () => {
   return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
 }
 
-const generatedAt = () =>
+export const generatedAt = () =>
   new Intl.DateTimeFormat("en-IN", {
     day: "numeric",
     month: "short",
@@ -142,7 +142,7 @@ export async function excelFile(report: ReportExport): Promise<ReportFile> {
  * PDF's built-in fonts only cover Latin-1, plus a few punctuation marks like
  * the en dash. Anything else would print as gibberish.
  */
-const latin = <T extends string | number>(value: T): T =>
+export const latin = <T extends string | number>(value: T): T =>
   typeof value === "number"
     ? value
     : ((value as string)

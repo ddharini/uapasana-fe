@@ -1,5 +1,6 @@
 import {
   RiDownload2Line,
+  RiFilePdf2Line,
   RiHotelBedLine,
   RiSearchLine,
   RiUserAddLine,
@@ -17,6 +18,7 @@ import { Badge, EmptyState, Skeleton } from "@/components/ui/primitives"
 import { NativeSelect } from "@/components/ui/select"
 import { EVENT, MANDALS, NO_MANDAL, formatDay } from "@/config/event"
 import { useRegistrations } from "@/features/registrations/api"
+import { downloadRegistrationsPdf } from "@/features/registrations/export-pdf"
 import {
   StatusBadge,
   TravelModeIcon,
@@ -213,6 +215,29 @@ export function Registrations() {
   const people = filtered.reduce((sum, r) => sum + r.members.length, 0)
   const anyFilter = query !== "" || FILTERS.some((key) => params.get(key))
 
+  const [exportingPdf, setExportingPdf] = React.useState(false)
+  const exportPdf = async () => {
+    // The filters in words, so a printed list says what it is a list of.
+    const value = (key: FilterKey) => params.get(key) ?? ""
+    const description = [
+      scope && `Mandal: ${scope}`,
+      value("type") &&
+        `Type: ${REGISTRATION_TYPES[value("type") as keyof typeof REGISTRATION_TYPES] ?? value("type")}`,
+      value("status") &&
+        `Status: ${REGISTRATION_STATUSES[value("status") as keyof typeof REGISTRATION_STATUSES] ?? value("status")}`,
+      value("mandal") && `Mandal: ${value("mandal")}`,
+      value("travel") &&
+        `Travel: ${TRAVEL_MODES[value("travel") as keyof typeof TRAVEL_MODES] ?? value("travel")}`,
+      query && `Search: "${query}"`,
+    ].filter((line): line is string => !!line)
+    setExportingPdf(true)
+    try {
+      await downloadRegistrationsPdf(filtered, description)
+    } finally {
+      setExportingPdf(false)
+    }
+  }
+
   const filterSelect = (
     key: FilterKey,
     label: string,
@@ -254,6 +279,15 @@ export function Registrations() {
             >
               <RiDownload2Line />
               Export CSV
+            </Button>
+            <Button
+              variant="outline"
+              size="lg"
+              disabled={filtered.length === 0 || exportingPdf}
+              onClick={exportPdf}
+            >
+              <RiFilePdf2Line />
+              {exportingPdf ? "Preparing…" : "Export PDF"}
             </Button>
             {/* The one way in to the form now that it has no tab of its own. */}
             <Link
