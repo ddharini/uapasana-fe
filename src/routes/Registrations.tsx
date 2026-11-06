@@ -308,6 +308,9 @@ export function Registrations() {
         // In both languages: the form offers both.
         whatsappText={`${EVENT.name} — register yourself and your family here. The form can be filled in English or Gujarati.\n${EVENT.name} — તમારી અને તમારા પરિવારની નોંધણી અહીં કરો. ફોર્મ ગુજરાતીમાં પણ ભરી શકાય છે.`}
         openLabel="Open the registration form"
+        qrTitle="Registration form"
+        qrCaption={["ફોર્મ ખોલવા માટે ફોનના કેમેરાથી સ્કેન કરો"]}
+        qrFileName="registration-form-qr"
       />
 
       <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">

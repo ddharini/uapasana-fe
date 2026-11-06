@@ -332,6 +332,8 @@ export function Guests() {
         path="/guests/register"
         whatsappText={`${EVENT.name} — bringing friends or family for a day? Tell us whose guests they are, which days, how many, and whether they take mahaprasad:`}
         openLabel="Open the guest form"
+        qrTitle="Guest form"
+        qrFileName="guest-form-qr"
       />
 
       {isPending ? (

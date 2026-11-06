@@ -2,15 +2,18 @@ import {
   RiCheckLine,
   RiExternalLinkLine,
   RiFileCopyLine,
+  RiQrCodeLine,
   RiWhatsappLine,
 } from "@remixicon/react"
 import * as React from "react"
 
+import { QrCodeDialog } from "@/components/QrCodeDialog"
 import { Button, buttonVariants } from "@/components/ui/button"
 
 /**
- * A public form's link, with the ways the team hands it on: copy, WhatsApp
- * and open. On the Registrations and Guests screens.
+ * A public form's link, with the ways the team hands it on: copy, WhatsApp,
+ * a QR code to print or post, and open. On the Registrations and Guests
+ * screens.
  */
 export function ShareLink({
   title,
@@ -18,6 +21,9 @@ export function ShareLink({
   path,
   whatsappText,
   openLabel,
+  qrTitle,
+  qrCaption,
+  qrFileName,
 }: {
   title: string
   description: string
@@ -27,9 +33,18 @@ export function ShareLink({
   whatsappText: string
   /** For screen readers: what the open button opens. */
   openLabel: string
+  /** The form's name on the QR card, e.g. "Registration form". */
+  qrTitle: string
+  /** Extra lines under the QR code, e.g. the instruction in Gujarati. */
+  qrCaption?: string[]
+  /** The QR image's file name, without ".png". */
+  qrFileName: string
 }) {
+  // The address the browser is on, so the QR code always opens the website
+  // it was made from — never a hard-coded domain that could go stale.
   const url = `${window.location.origin}${path}`
   const [copied, setCopied] = React.useState(false)
+  const [qrOpen, setQrOpen] = React.useState(false)
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(url)
@@ -69,6 +84,15 @@ export function ShareLink({
           <RiWhatsappLine />
           Share
         </a>
+        <Button
+          variant="outline"
+          size="icon-lg"
+          onClick={() => setQrOpen(true)}
+          aria-label="Show the QR code"
+          title="QR code"
+        >
+          <RiQrCodeLine />
+        </Button>
         <a
           href={path}
           target="_blank"
@@ -79,6 +103,15 @@ export function ShareLink({
           <RiExternalLinkLine />
         </a>
       </div>
+
+      <QrCodeDialog
+        open={qrOpen}
+        onOpenChange={setQrOpen}
+        title={qrTitle}
+        url={url}
+        caption={qrCaption}
+        fileName={qrFileName}
+      />
     </div>
   )
 }
