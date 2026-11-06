@@ -9,7 +9,7 @@ import { NavLink } from "react-router"
 
 // AVIF, then WebP, then JPEG for the rest: each phone downloads the one
 // width it needs, about a tenth of the source JPEG on a small screen.
-import eventBanner from "@/assets/event-banner.jpg?w=480;672;1008;1344&format=avif;webp;jpg&as=picture"
+import eventBanner from "@/assets/event-banner.png?w=480;672;1008;1344&format=avif;webp;jpg&as=picture"
 import { EVENT, formatEventRange } from "@/config/event"
 import { useT } from "@/i18n/context"
 
