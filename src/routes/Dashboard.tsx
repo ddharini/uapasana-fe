@@ -1,11 +1,14 @@
-import { RiUserAddLine } from "@remixicon/react"
+import { RiImageLine, RiUserAddLine } from "@remixicon/react"
 import { cn } from "cn"
+import { toPng } from "html-to-image"
+import { useRef, useState } from "react"
+import { flushSync } from "react-dom"
 import { Link } from "react-router"
 
 import { PageHeader } from "@/components/layout/AppShell"
 import { useSession } from "@/lib/auth-client"
 import { LoadError } from "@/components/LoadError"
-import { buttonVariants } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import {
   Card,
   CardDescription,
@@ -148,22 +151,94 @@ function DayByDay({ summary }: { summary: Summary }) {
   )
 }
 
+const snapshotStamp = new Intl.DateTimeFormat("en-IN", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+  hour: "numeric",
+  minute: "2-digit",
+})
+
+/**
+ * Saves a card as a PNG, exactly as it is drawn, so it can be sent on
+ * WhatsApp to people who have no login. html-to-image rather than html2canvas:
+ * the theme's colours are oklch(), which html2canvas cannot parse, while
+ * html-to-image lets the browser itself paint the clone. The card shows an
+ * "as of" time only while it is being captured — a picture passed around
+ * without one cannot be told apart from yesterday's.
+ */
+function useSnapshot(fileName: string) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [takenAt, setTakenAt] = useState<Date | null>(null)
+
+  const save = async () => {
+    const node = ref.current
+    if (!node || takenAt) return
+    const now = new Date()
+    // Render the timestamp before the clone is taken, not on the next paint.
+    flushSync(() => setTakenAt(now))
+    try {
+      const url = await toPng(node, {
+        pixelRatio: 2,
+        // The card's own colour, so rounded corners don't come out transparent
+        // (black in most chat apps) and dark mode stays dark.
+        backgroundColor: getComputedStyle(node).backgroundColor,
+        filter: (n) =>
+          !(n instanceof HTMLElement && n.dataset.snapshotSkip !== undefined),
+      })
+      const link = document.createElement("a")
+      link.href = url
+      link.download = `${fileName}-${now.toISOString().slice(0, 10)}.png`
+      link.click()
+    } catch (err) {
+      console.error("Snapshot failed", err)
+      window.alert("Could not save the picture. Please try again.")
+    } finally {
+      setTakenAt(null)
+    }
+  }
+
+  return { ref, takenAt, save }
+}
+
 function Breakdown({
   title,
   description,
   rows,
+  snapshotName,
 }: {
   title: string
   description: string
   rows: { label: string; value: number; detail?: string }[]
+  /** File name stem; when set, the card gets a "Save as PNG" button. */
+  snapshotName?: string
 }) {
   const max = Math.max(...rows.map((r) => r.value), 0)
+  const { ref, takenAt, save } = useSnapshot(snapshotName ?? "snapshot")
   return (
-    <Card className="gap-3">
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
-      </CardHeader>
+    <Card ref={ref} className="gap-3">
+      <div className="flex items-start justify-between gap-3">
+        <CardHeader className="min-w-0">
+          <CardTitle>{title}</CardTitle>
+          <CardDescription>
+            {description}
+            {takenAt && ` As of ${snapshotStamp.format(takenAt)}.`}
+          </CardDescription>
+        </CardHeader>
+        {snapshotName && (
+          <Button
+            variant="outline"
+            size="sm"
+            data-snapshot-skip=""
+            disabled={takenAt !== null}
+            onClick={() => void save()}
+            title="Download this card as a picture to share"
+          >
+            <RiImageLine />
+            {takenAt ? "Saving…" : "Save as PNG"}
+          </Button>
+        )}
+      </div>
       <ul className="flex flex-col gap-2.5">
         {rows.map((row) => (
           <li key={row.label} className="flex flex-col gap-1">
@@ -281,6 +356,7 @@ export function Dashboard() {
         <Breakdown
           title="By mandal"
           description="Devotees per mandal, with the number of registrations."
+          snapshotName="devotees-by-mandal"
           rows={summary.mandals.map((m) => ({
             label: m.mandal,
             value: m.people,
