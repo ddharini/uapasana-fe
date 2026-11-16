@@ -122,6 +122,7 @@ export const GU: Record<string, string> = {
   Bhavnagar: "ભાવનગર",
   Rajpipla: "રાજપીપળા",
   Jasdan: "જસદણ",
+  Visnagar: "વિસનગર",
   Delhi: "દિલ્હી",
   "South Gujarat": "દક્ષિણ ગુજરાત",
   "North Gujarat": "ઉત્તર ગુજરાત",

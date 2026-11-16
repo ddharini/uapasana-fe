@@ -85,6 +85,7 @@ export const MANDAL_GROUPS = [
       "Bhavnagar",
       "Rajpipla",
       "Jasdan",
+      "Visnagar",
     ],
   },
   {
