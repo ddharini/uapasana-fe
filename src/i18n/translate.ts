@@ -69,6 +69,10 @@ const SERVER_PATTERNS: [RegExp, string][] = [
     "Wait {n} seconds before asking for another code.",
   ],
   [
+    /^Too many codes sent to this number\. Try again in (?<n>\d+) minutes?\.$/,
+    "Too many codes sent to this number. Try again in {n} minutes.",
+  ],
+  [
     /^That code is not right\. (?<n>\d+) tr(?:y|ies) left\.$/,
     "That code is not right. {n} tries left.",
   ],

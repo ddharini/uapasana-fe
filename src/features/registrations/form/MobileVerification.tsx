@@ -22,6 +22,7 @@ import {
   useVerifyOtp,
 } from "../api"
 import { DevCodeNote } from "../components"
+import { forgetCodeSent, recallCodeSent, rememberCodeSent } from "../otp-pending"
 import { REGISTRATION_STATUSES, type RegistrationSummary } from "../types"
 import { useFormOptions } from "./form-options"
 import {
@@ -70,11 +71,16 @@ export function MobileVerification() {
   const sendOtp = useSendOtp()
   const verifyOtp = useVerifyOtp()
   // The number the current code went to. A different number on screen means
-  // that code is useless, so the step starts over.
-  const [sentTo, setSentTo] = React.useState<string>()
+  // that code is useless, so the step starts over. Read back from storage so a
+  // code sent before a reload — opening WhatsApp to read it can cost the tab —
+  // or before Back and Continue still has its box (otp-pending.ts).
+  const [pending] = React.useState(recallCodeSent)
+  const [sentTo, setSentTo] = React.useState<string | undefined>(
+    pending?.mobile
+  )
   const [code, setCode] = React.useState("")
   const [devCode, setDevCode] = React.useState<string>()
-  const [resendIn, setResendIn] = React.useState(0)
+  const [resendIn, setResendIn] = React.useState(pending?.resendInSeconds ?? 0)
   // What the code check said this number is already registered as.
   const [takenFromOtp, setTakenFromOtp] = React.useState<{
     mobile: string
@@ -165,6 +171,7 @@ export function MobileVerification() {
     verifyOtp.reset()
     sendOtp.mutate(e164, {
       onSuccess: (result) => {
+        rememberCodeSent(e164, result)
         setSentTo(e164)
         setCode("")
         setDevCode(result.devCode)
@@ -179,6 +186,7 @@ export function MobileVerification() {
       { mobile: e164, code: value },
       {
         onSuccess: ({ verificationToken, existing: found }) => {
+          forgetCodeSent()
           setValue("verifiedMobile", e164)
           setValue("mobileVerificationToken", verificationToken)
           const already = found.find((r) => r.id !== editingId)

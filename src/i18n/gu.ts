@@ -553,8 +553,8 @@ export const GU: Record<string, string> = {
     "અત્યારે ખાતરી કોડ મોકલી શકાતો નથી. થોડી વાર પછી ફરી પ્રયત્ન કરો.",
   "Wait {n} seconds before asking for another code.":
     "નવો કોડ માંગતા પહેલાં {n} સેકન્ડ રાહ જુઓ.",
-  "Too many codes sent to this number. Try again in an hour.":
-    "આ નંબર પર ઘણા બધા કોડ મોકલાઈ ગયા છે. એક કલાક પછી ફરી પ્રયત્ન કરો.",
+  "Too many codes sent to this number. Try again in {n} minutes.":
+    "આ નંબર પર ઘણા બધા કોડ મોકલાઈ ગયા છે. {n} મિનિટ પછી ફરી પ્રયત્ન કરો.",
   "Too many verification requests right now. Please try again shortly.":
     "અત્યારે ઘણી બધી વિનંતીઓ આવી રહી છે. થોડી વારમાં ફરી પ્રયત્ન કરો.",
   "This code has already been used. Send a new one.":

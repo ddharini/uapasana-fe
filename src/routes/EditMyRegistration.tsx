@@ -20,6 +20,11 @@ import {
   RegistrationConfirmation,
 } from "@/features/registrations/components"
 import { RegistrationForm } from "@/features/registrations/form/RegistrationForm"
+import {
+  forgetCodeSent,
+  recallCodeSent,
+  rememberCodeSent,
+} from "@/features/registrations/otp-pending"
 import type { Registration } from "@/features/registrations/types"
 import { useT } from "@/i18n/context"
 import { LanguagePicker, LanguageProvider } from "@/i18n/LanguageProvider"
@@ -237,13 +242,21 @@ function VerifyNumber({
   const { t } = useT()
   const sendOtp = useSendOtp()
   const verifyOtp = useVerifyOtp()
-  const initial = initialMobile ? fromE164(initialMobile) : undefined
+  // A code sent before the tab was reloaded — reading it means opening
+  // WhatsApp — keeps its box, on the number it went to (otp-pending.ts).
+  const [pending] = React.useState(recallCodeSent)
+  const resumed =
+    pending && (!initialMobile || initialMobile === pending.mobile)
+      ? pending.mobile
+      : undefined
+  const startMobile = initialMobile ?? resumed
+  const initial = startMobile ? fromE164(startMobile) : undefined
   const [country, setCountry] = React.useState<string>(
     initial?.code ?? DEFAULT_COUNTRY_CODE
   )
   const [mobile, setMobile] = React.useState(initial?.national ?? "")
   const [numberError, setNumberError] = React.useState<string>()
-  const [sentTo, setSentTo] = React.useState<string>()
+  const [sentTo, setSentTo] = React.useState<string | undefined>(resumed)
   const [code, setCode] = React.useState("")
   const [devCode, setDevCode] = React.useState<string>()
 
@@ -260,6 +273,7 @@ function VerifyNumber({
     if (problem || !e164) return
     sendOtp.mutate(e164, {
       onSuccess: (result) => {
+        rememberCodeSent(e164, result)
         setSentTo(e164)
         setCode("")
         setDevCode(result.devCode)
@@ -272,8 +286,10 @@ function VerifyNumber({
     verifyOtp.mutate(
       { mobile: sentTo, code: value },
       {
-        onSuccess: ({ verificationToken }) =>
-          onVerified({ mobile: sentTo, token: verificationToken }),
+        onSuccess: ({ verificationToken }) => {
+          forgetCodeSent()
+          onVerified({ mobile: sentTo, token: verificationToken })
+        },
       }
     )
   }
