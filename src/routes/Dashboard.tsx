@@ -16,7 +16,7 @@ import {
   CardTitle,
   Skeleton,
 } from "@/components/ui/primitives"
-import { formatStayDate } from "@/config/event"
+import { YOUTH_MAX_AGE, YOUTH_MIN_AGE, formatStayDate } from "@/config/event"
 import { useAccommodation } from "@/features/accommodation/api"
 import type { AccommodationData } from "@/features/accommodation/types"
 import { useRegistrations } from "@/features/registrations/api"
@@ -32,14 +32,21 @@ function Stat({
   value,
   detail,
   tone,
+  className,
 }: {
   label: string
   value: number
   detail: string
   tone?: "warning"
+  className?: string
 }) {
   return (
-    <div className="flex flex-col gap-1 rounded-lg border border-border bg-card p-4">
+    <div
+      className={cn(
+        "flex flex-col gap-1 rounded-lg border border-border bg-card p-4",
+        className
+      )}
+    >
       <span className="text-2xs tracking-wide text-muted-foreground uppercase">
         {label}
       </span>
@@ -306,8 +313,8 @@ export function Dashboard() {
     return (
       <>
         {header}
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          {Array.from({ length: 4 }, (_, i) => (
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+          {Array.from({ length: 5 }, (_, i) => (
             <Skeleton key={i} className="h-24" />
           ))}
         </div>
@@ -323,7 +330,7 @@ export function Dashboard() {
     <>
       {header}
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
         <Stat
           label="Devotees"
           value={summary.people}
@@ -347,6 +354,13 @@ export function Dashboard() {
           label="Need assistance"
           value={summary.needsAssistance}
           detail={`${summary.seniors} seniors (60+) · ${summary.children} children under 12`}
+        />
+        {/* Five tiles: on phones the fifth takes the whole row rather than half of one. */}
+        <Stat
+          className="col-span-2 lg:col-span-1"
+          label="Youth Convention"
+          value={summary.youthConvention}
+          detail={`Devotees (${YOUTH_MIN_AGE}–${YOUTH_MAX_AGE}) attending · ${summary.youthUnanswered} not answered yet`}
         />
       </div>
 

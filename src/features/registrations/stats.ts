@@ -1,4 +1,10 @@
-import { EVENT, MANDALS, NO_MANDAL } from "@/config/event"
+import {
+  EVENT,
+  MANDALS,
+  NO_MANDAL,
+  YOUTH_MAX_AGE,
+  YOUTH_MIN_AGE,
+} from "@/config/event"
 
 import { isPresentOn, travelOf, wantsBed } from "./stay"
 import {
@@ -20,16 +26,12 @@ export function summarize(registrations: Registration[]) {
   const people = active.flatMap((r) => r.members)
 
   const byStatus = Object.fromEntries(
-    (
-      [
-        "confirmed",
-        "checked_in",
-        "cancelled",
-      ] as RegistrationStatus[]
-    ).map((status) => [
-      status,
-      registrations.filter((r) => r.status === status).length,
-    ])
+    (["confirmed", "checked_in", "cancelled"] as RegistrationStatus[]).map(
+      (status) => [
+        status,
+        registrations.filter((r) => r.status === status).length,
+      ]
+    )
   ) as Record<RegistrationStatus, number>
 
   /** Who is on site each event day, and who needs a bed that night. */
@@ -74,9 +76,7 @@ export function summarize(registrations: Registration[]) {
     .sort((a, b) => b.people - a.people)
 
   // Each person's way here: their own when the party travels separately.
-  const travellers = active.flatMap((r) =>
-    r.members.map((m) => travelOf(r, m))
-  )
+  const travellers = active.flatMap((r) => r.members.map((m) => travelOf(r, m)))
   const travel = (Object.keys(TRAVEL_MODES) as TravelMode[])
     // Counted per person, so nobody is "travelling separately" on their own.
     .filter((mode) => mode !== "separate")
@@ -96,6 +96,16 @@ export function summarize(registrations: Registration[]) {
     children: people.filter((m) => m.age < 12).length,
     seniors: people.filter((m) => m.age >= 60).length,
     needsAssistance: people.filter((m) => m.needsAssistance).length,
+    // Only people aged YOUTH_MIN_AGE..YOUTH_MAX_AGE are asked, and the server
+    // drops an answer for anyone outside that range, so a "yes" is a youth.
+    youthConvention: people.filter((m) => m.attendsYouthConvention === true)
+      .length,
+    youthUnanswered: people.filter(
+      (m) =>
+        m.age >= YOUTH_MIN_AGE &&
+        m.age <= YOUTH_MAX_AGE &&
+        m.attendsYouthConvention == null
+    ).length,
     // People who sleep over at least one night; a same-day visitor in the
     // party needs no bed.
     needsAccommodation: active
