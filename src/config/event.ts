@@ -134,6 +134,8 @@ const LOCAL_MANDALS: readonly string[] = ["Dehgam", "Gandhinagar"]
 export const isLocalMandal = (mandal: string) =>
   mandal.startsWith("Ahmedabad") || LOCAL_MANDALS.includes(mandal)
 
+/** The youngest age asked whether they will attend the Youth Convention. Mirrors the server. */
+export const YOUTH_MIN_AGE = 13
 /** The oldest age asked whether they will attend the Youth Convention. Mirrors the server. */
 export const YOUTH_MAX_AGE = 40
 

@@ -4,6 +4,7 @@ import {
   MANDALS,
   OVERSEAS_MANDALS,
   YOUTH_MAX_AGE,
+  YOUTH_MIN_AGE,
   isLocalMandal,
   ARRIVAL_DATES,
   DEPARTURE_DATES,
@@ -71,9 +72,11 @@ export const TRAVEL_CHOICES = (
     mode !== "local" && mode !== "not_filled" && mode !== "separate"
 )
 
-/** Whether someone of this age (as typed) is asked about the Youth Convention. */
+/** Whether someone of this age (as typed) is asked about the Youth Convention. Mirrors isYouthAge on the server. */
 export const asksYouthConvention = (age: string) =>
-  /^\d{1,3}$/.test(age.trim()) && Number(age) <= YOUTH_MAX_AGE
+  /^\d{1,3}$/.test(age.trim()) &&
+  Number(age) >= YOUTH_MIN_AGE &&
+  Number(age) <= YOUTH_MAX_AGE
 
 /** "yes" → true, "no" → false, anything else (unanswered) → undefined. */
 const yesNoAnswer = (answer: string | undefined) =>
@@ -277,7 +280,7 @@ const makeMemberSchema = (t: Translate) =>
     // Asked per person only when the party does not all need a bed. Optional so
     // a draft saved before it existed still loads.
     needsAccommodation: z.boolean().optional(),
-    // Aged YOUTH_MAX_AGE or under: "yes", "no" or unanswered (optional).
+    // Aged YOUTH_MIN_AGE to YOUTH_MAX_AGE: "yes", "no" or unanswered (optional).
     // Optional so a draft saved before it existed still loads.
     youthConvention: z.string().optional(),
     // "Arriving early for seva as a Swayam Sevak", optional. Ticked, this
