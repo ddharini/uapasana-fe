@@ -36,7 +36,7 @@ import {
   useUpdateOwnRegistration,
   useUpdateRegistration,
 } from "../api"
-import type { Registration } from "../types"
+import type { NumberUse, Registration } from "../types"
 import { clearDraft, hasContent, loadDraft, saveDraft } from "./draft"
 import { FormOptionsContext, type FormOptions } from "./form-options"
 import { errorPaths, keepErrorsFresh } from "./fresh-errors"
@@ -347,6 +347,28 @@ export function RegistrationForm({
           form.setError("members.0.mobile", {
             message: serverMessage(t, error.message),
           })
+          saving.reset()
+          return
+        }
+        // One number, one registration: a number here is already on another.
+        // Recorded in the form, so the schema marks each person with one and
+        // keeps Continue blocked until the number is changed or the person
+        // removed. The People step is where they can be.
+        if (error instanceof ApiError && error.code === "NUMBER_IN_USE") {
+          const people = (error.details.people ?? []) as (NumberUse & {
+            index: number
+          })[]
+          form.setValue("alreadyListed", [
+            ...(form.getValues("alreadyListed") ?? []),
+            // `index` is where they are in this form, not part of who they are.
+            ...people.map((person) => ({ ...person, index: undefined })),
+          ])
+          markAttempted(1)
+          goTo(1)
+          await form.trigger(
+            people.map((p) => `members.${p.index}.mobile` as const)
+          )
+          showFirstError(1)
           saving.reset()
           return
         }

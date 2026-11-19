@@ -258,6 +258,31 @@ export type RegistrationSummary = {
   mandal: string
 }
 
+/**
+ * Where a mobile number is already used — the registration, and whose entry
+ * it is typed against there. From POST /otp/verify (`listed`, with their
+ * dates) or a refused submit (NUMBER_IN_USE's `people`, without). One number,
+ * one registration: see `number-in-use.ts`.
+ */
+export type NumberUse = {
+  /** Only from a verified code. */
+  id?: string
+  /** The registration they are on, e.g. "DM-F-0194". */
+  code: string
+  type: RegistrationType
+  /** Its family name, or the contact's name for one person. */
+  name: string
+  contactName: string
+  personCode: string | null
+  personName: string
+  mobile: string | null
+  /** Only from a verified code: the number is theirs. */
+  mandal?: string
+  status?: RegistrationStatus
+  arrival?: StayPoint
+  departure?: StayPoint
+}
+
 /** What the form submits. The server assigns everything else. */
 export type NewRegistration = Omit<
   Registration,

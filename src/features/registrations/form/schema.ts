@@ -25,6 +25,7 @@ import {
   toE164,
 } from "@/lib/phone"
 
+import { usedElsewhere } from "../number-in-use"
 import {
   compareStay,
   hasOwnFlights,
@@ -42,6 +43,7 @@ import {
   type RegistrationType,
   type IndiaFlight,
   type IndiaTravel,
+  type NumberUse,
   type PersonTravel,
   type StayPoint,
   type TravelMode,
@@ -352,6 +354,12 @@ export function makeRegistrationFormSchema(lang: Lang = "en") {
       // MobileVerification; blocks Continue while the number is the same.
       takenMobile: z.string(),
       takenCode: z.string(),
+      // Numbers found already on another registration (number-in-use.ts):
+      // from the contact's verified code, or from a submit the server refused
+      // with NUMBER_IN_USE. Not inputs. Blocks Continue on anyone here with
+      // one of these numbers; changing the number, or removing the person,
+      // lets the form go on.
+      alreadyListed: z.array(z.custom<NumberUse>(() => true)),
       // The other people of a family while "Individual" is picked, so switching
       // back brings them back. Never submitted, never validated.
       stashedMembers: z.array(
@@ -539,6 +547,20 @@ export function makeRegistrationFormSchema(lang: Lang = "en") {
                   }
                 )
               : t("Already registered — one registration per number")
+          )
+          return
+        }
+        // One number, one registration.
+        const used = usedElsewhere(
+          toE164(member.mobileCountry, member.mobile),
+          values.alreadyListed
+        )
+        if (used) {
+          issue(
+            ["members", index, "mobile"],
+            t("Already used in {code} — one number, one registration", {
+              code: used.code,
+            })
           )
           return
         }
@@ -1344,6 +1366,7 @@ export const DEFAULT_VALUES: RegistrationFormValues = {
   keptMobile: "",
   takenMobile: "",
   takenCode: "",
+  alreadyListed: [],
   stashedMembers: [],
   sameFlights: true,
   ...EMPTY_FLIGHTS,

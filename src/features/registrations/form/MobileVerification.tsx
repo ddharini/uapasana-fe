@@ -22,8 +22,14 @@ import {
   useVerifyOtp,
 } from "../api"
 import { DevCodeNote } from "../components"
+import { formatStay } from "../format"
 import { forgetCodeSent, recallCodeSent, rememberCodeSent } from "../otp-pending"
-import { REGISTRATION_STATUSES, type RegistrationSummary } from "../types"
+import { usedElsewhere } from "../number-in-use"
+import {
+  REGISTRATION_STATUSES,
+  type NumberUse,
+  type RegistrationSummary,
+} from "../types"
 import { useFormOptions } from "./form-options"
 import {
   MOBILE_OTP_REQUIRED,
@@ -46,6 +52,11 @@ import {
  * booked twice, as soon as the number is complete — before any code is sent.
  * The desk sees which registration; the public page only that there is one,
  * until a code proves the number is theirs.
+ *
+ * And, once the code is right, whether the number is already typed against a
+ * family member on another registration (number-in-use.ts). One number, one
+ * registration: the form stops there and says which registration and whose
+ * entry, rather than letting the number be used twice.
  */
 export function MobileVerification() {
   const { watch, setValue, trigger, getValues } =
@@ -59,6 +70,7 @@ export function MobileVerification() {
     verifiedMobile,
     token,
     takenMobile,
+    alreadyListed,
   ] = watch([
     "members",
     "keptMobile",
@@ -66,6 +78,7 @@ export function MobileVerification() {
     "verifiedMobile",
     "mobileVerificationToken",
     "takenMobile",
+    "alreadyListed",
   ])
 
   const sendOtp = useSendOtp()
@@ -120,6 +133,8 @@ export function MobileVerification() {
   // Public page: taken, but whose is not for us to say. Read from the form, so
   // a submit that lost the race to another registration lands here too.
   const takenUnnamed = !atDesk && !taken && !!e164 && takenMobile === e164
+  // Already typed against someone on another registration.
+  const usedIn = usedElsewhere(e164, alreadyListed)
 
   // Recorded in the form, so the schema blocks Continue on this number. At
   // the desk the lookup is live, so it also clears when the number changes.
@@ -185,10 +200,18 @@ export function MobileVerification() {
     verifyOtp.mutate(
       { mobile: e164, code: value },
       {
-        onSuccess: ({ verificationToken, existing: found }) => {
+        onSuccess: ({ verificationToken, existing: found, listed }) => {
           forgetCodeSent()
           setValue("verifiedMobile", e164)
           setValue("mobileVerificationToken", verificationToken)
+          // Where else this number is used; the schema and `usedIn` above
+          // stop on it. Replaces what an earlier code said about the number.
+          setValue("alreadyListed", [
+            ...(getValues("alreadyListed") ?? []).filter(
+              (p) => p.mobile !== e164
+            ),
+            ...(listed ?? []).filter((p) => !p.id || p.id !== editingId),
+          ])
           const already = found.find((r) => r.id !== editingId)
           if (already) {
             setTakenFromOtp({ mobile: e164, registration: already })
@@ -218,6 +241,9 @@ export function MobileVerification() {
       />
     )
   }
+
+  // Already used on another registration: nothing more to verify either.
+  if (usedIn) return <NumberUsedElsewhere use={usedIn} mobile={e164} />
 
   // Codes switched off for now: nothing to confirm.
   if (!MOBILE_OTP_REQUIRED) return null
@@ -446,6 +472,72 @@ function AlreadyRegistered({
           {t("Change my registration")}
         </Link>
       )}
+    </div>
+  )
+}
+
+/**
+ * One number, one registration: this number is already typed against someone
+ * on another registration. Says which registration and whose entry, with that
+ * person's dates, and what to do — the same person asks that registration's
+ * contact to change it or take them off it; someone else's entry needs its
+ * number changed there, or a different number here. Shown only after a code
+ * proved the number is theirs, or after the server refused the submit for it.
+ */
+function NumberUsedElsewhere({ use: u, mobile }: { use: NumberUse; mobile: string }) {
+  const { t, lang } = useT()
+  return (
+    <div className="flex flex-col gap-2 rounded-md border border-destructive/30 bg-destructive/5 p-3 text-2xs/relaxed">
+      <p className="flex items-start gap-1.5 font-medium text-destructive">
+        <RiErrorWarningLine className="mt-px size-3.5 shrink-0" />
+        {t("{mobile} is already used in another registration", {
+          mobile: formatMobile(mobile),
+        })}
+      </p>
+      <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 text-foreground">
+        <dt className="text-muted-foreground">{t("Registration")}</dt>
+        <dd>
+          <span className="font-mono font-medium">{u.code}</span> · {u.name}
+        </dd>
+        <dt className="text-muted-foreground">{t("Number given for")}</dt>
+        <dd>
+          {u.personName}
+          {u.personCode && (
+            <span className="font-mono text-muted-foreground"> · {u.personCode}</span>
+          )}
+        </dd>
+        <dt className="text-muted-foreground">{t("Contact")}</dt>
+        <dd>{u.contactName}</dd>
+        {u.arrival && (
+          <>
+            <dt className="text-muted-foreground">{t("Arriving")}</dt>
+            <dd>{formatStay(u.arrival, lang)}</dd>
+          </>
+        )}
+        {u.departure && (
+          <>
+            <dt className="text-muted-foreground">{t("Leaving")}</dt>
+            <dd>{formatStay(u.departure, lang)}</dd>
+          </>
+        )}
+      </dl>
+      <p className="text-muted-foreground">
+        {t("Each mobile number can be on one registration only.")}
+      </p>
+      <ul className="list-disc pl-4 text-muted-foreground">
+        <li>
+          {t(
+            "If this is you: ask {contact} to change that registration, or to remove you from it before you register here.",
+            { contact: u.contactName }
+          )}
+        </li>
+        <li>
+          {t(
+            "If it is someone else: ask {contact} to change the number given for {person}, or use a different number here.",
+            { contact: u.contactName, person: u.personName }
+          )}
+        </li>
+      </ul>
     </div>
   )
 }

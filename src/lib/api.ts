@@ -21,12 +21,23 @@ export class ApiError extends Error {
   // the shorthand because it emits real code rather than erasing to nothing.
   readonly status: number
   readonly code?: string
+  /**
+   * The rest of the error body: `errors[]` (`{ path, message }`) and anything
+   * a code carries alongside, such as NUMBER_IN_USE's `people`.
+   */
+  readonly details: Record<string, unknown>
 
-  constructor(message: string, status: number, code?: string) {
+  constructor(
+    message: string,
+    status: number,
+    code?: string,
+    details: Record<string, unknown> = {}
+  ) {
     super(message)
     this.name = "ApiError"
     this.status = status
     this.code = code
+    this.details = details
   }
 }
 
@@ -52,7 +63,14 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   }
 
   if (!response.ok || !body.success) {
-    throw new ApiError(body.message ?? `Request failed (${response.status})`, response.status, body.code)
+    const details: Record<string, unknown> = { ...body }
+    for (const key of ["success", "data", "message", "code"]) delete details[key]
+    throw new ApiError(
+      body.message ?? `Request failed (${response.status})`,
+      response.status,
+      body.code,
+      details
+    )
   }
 
   return body.data as T

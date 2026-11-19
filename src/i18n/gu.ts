@@ -237,6 +237,16 @@ export const GU: Record<string, string> = {
   "To add people or change dates, change that registration instead.":
     "વ્યક્તિઓ ઉમેરવા કે તારીખો બદલવા માટે, તે નોંધણીમાં જ ફેરફાર કરો.",
   "Change my registration": "મારી નોંધણીમાં ફેરફાર કરો",
+  "{mobile} is already used in another registration":
+    "{mobile} બીજી નોંધણીમાં પહેલેથી વપરાયેલ છે",
+  "Number given for": "નંબર કોના માટે આપેલ છે",
+  Contact: "સંપર્ક",
+  "Each mobile number can be on one registration only.":
+    "એક મોબાઇલ નંબર ફક્ત એક જ નોંધણીમાં હોઈ શકે છે.",
+  "If this is you: ask {contact} to change that registration, or to remove you from it before you register here.":
+    "જો આ તમે જ છો: {contact} ને તે નોંધણીમાં ફેરફાર કરવા કહો, અથવા અહીં નોંધણી કરતાં પહેલાં તેમાંથી તમારું નામ કાઢી નાખવા કહો.",
+  "If it is someone else: ask {contact} to change the number given for {person}, or use a different number here.":
+    "જો આ બીજું કોઈ છે: {contact} ને {person} માટે આપેલો નંબર બદલવા કહો, અથવા અહીં બીજો નંબર વાપરો.",
   "Country code": "દેશનો કોડ",
   India: "ભારત",
   "USA / Canada": "USA / કેનેડા",
@@ -503,6 +513,8 @@ export const GU: Record<string, string> = {
     "{code} તરીકે પહેલેથી નોંધાયેલ છે — એક નંબર પર એક જ નોંધણી",
   "Already registered — one registration per number":
     "પહેલેથી નોંધાયેલ છે — એક નંબર પર એક જ નોંધણી",
+  "Already used in {code} — one number, one registration":
+    "{code} માં પહેલેથી વપરાયેલ છે — એક નંબર, એક જ નોંધણી",
   "Verify this number with the code we send on WhatsApp":
     "અમે WhatsApp પર મોકલેલા કોડથી આ નંબરની ખાતરી કરો",
   "Verification expired. Send a new code to confirm this number.":

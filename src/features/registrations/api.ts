@@ -6,6 +6,7 @@ import { ApiError, api } from "@/lib/api"
 
 import type {
   NewRegistration,
+  NumberUse,
   Registration,
   RegistrationStatus,
   RegistrationSummary,
@@ -147,6 +148,8 @@ export type OtpVerified = {
   verificationToken: string
   /** Registrations this number is already the contact for. */
   existing: RegistrationSummary[]
+  /** Where else this number is used: family members on other registrations. */
+  listed: NumberUse[]
 }
 
 export function useVerifyOtp() {
