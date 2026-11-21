@@ -29,7 +29,6 @@ import {
   formatIndiaFlight,
   formatMeal,
 } from "@/features/registrations/format"
-import { SampleDataToggle } from "@/features/registrations/SampleDataToggle"
 import {
   travelModesOf,
   travelOf,
@@ -222,12 +221,12 @@ export function Registrations() {
     const description = [
       scope && `Mandal: ${scope}`,
       value("type") &&
-        `Type: ${REGISTRATION_TYPES[value("type") as keyof typeof REGISTRATION_TYPES] ?? value("type")}`,
+      `Type: ${REGISTRATION_TYPES[value("type") as keyof typeof REGISTRATION_TYPES] ?? value("type")}`,
       value("status") &&
-        `Status: ${REGISTRATION_STATUSES[value("status") as keyof typeof REGISTRATION_STATUSES] ?? value("status")}`,
+      `Status: ${REGISTRATION_STATUSES[value("status") as keyof typeof REGISTRATION_STATUSES] ?? value("status")}`,
       value("mandal") && `Mandal: ${value("mandal")}`,
       value("travel") &&
-        `Travel: ${TRAVEL_MODES[value("travel") as keyof typeof TRAVEL_MODES] ?? value("travel")}`,
+      `Travel: ${TRAVEL_MODES[value("travel") as keyof typeof TRAVEL_MODES] ?? value("travel")}`,
       query && `Search: "${query}"`,
     ].filter((line): line is string => !!line)
     setExportingPdf(true)
@@ -270,7 +269,6 @@ export function Registrations() {
         }
         actions={
           <>
-            {isAdmin(session?.user.role) && <SampleDataToggle />}
             <Button
               variant="outline"
               size="lg"
