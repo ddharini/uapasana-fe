@@ -36,7 +36,7 @@ import {
   isSevak,
   wantsBed,
 } from "@/features/registrations/stay"
-import { isAdmin, useSession } from "@/lib/auth-client"
+import { useSession } from "@/lib/auth-client"
 import { formatMobile } from "@/lib/phone"
 import { formatTime } from "@/lib/time"
 import {
